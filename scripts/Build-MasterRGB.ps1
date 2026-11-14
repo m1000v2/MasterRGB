@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [string]$Workspace = (Join-Path $env:USERPROFILE 'Documents\MasterRGB-Build'),
     [switch]$BuildOnly
@@ -36,7 +36,7 @@ if (-not (Test-Path (Join-Path $sourceDir '.git'))) {
 # This removes the previous 0.2.2 branding injection without touching the
 # PowerColor detector file, so the RX 6700 XT registration remains preserved.
 Write-Host 'Preparando uma árvore limpa dos arquivos de interface/branding...' -ForegroundColor Cyan
-& git -C $sourceDir checkout -- qt/OpenRGBDialog/OpenRGBDialog.cpp cli.cpp OpenRGB.pro
+& git -C $sourceDir checkout -- qt/OpenRGBDialog/OpenRGBDialog.cpp qt/OpenRGBSettingsPage/OpenRGBSettingsPage.cpp qt/OpenRGBSoftwareInfoPage/OpenRGBSoftwareInfoPage.cpp cli.cpp OpenRGB.pro
 if ($LASTEXITCODE -ne 0) { throw 'Não foi possível restaurar os arquivos-base da interface. Confira o clone Git.' }
 
 $detector = Join-Path $sourceDir 'Controllers\PowerColorGPUController\PowerColorGPUControllerDetect.cpp'
@@ -205,15 +205,12 @@ New-Item -ItemType Directory -Force -Path (Join-Path $portableDir 'config') | Ou
 Copy-Item (Join-Path $PSScriptRoot '..\config\*') (Join-Path $portableDir 'config') -Recurse -Force
 New-Item -ItemType Directory -Force -Path (Join-Path $portableDir 'assets') | Out-Null
 Copy-Item (Join-Path $PSScriptRoot '..\assets\*') (Join-Path $portableDir 'assets') -Recurse -Force
-Copy-Item (Join-Path $PSScriptRoot 'Launch-MasterRGB.ps1') $portableDir -Force
-Copy-Item (Join-Path $PSScriptRoot 'Set-MasterRGBStartup.ps1') $portableDir -Force
-Copy-Item (Join-Path $PSScriptRoot 'Start-MasterRGB.cmd') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\README-PTBR.md') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\LICENSE') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\NOTICE.md') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\CHANGELOG.md') $portableDir -Force
 
-$zipPath = Join-Path $distRoot 'MasterRGB-0.2.3-Preview-Portable.zip'
+$zipPath = Join-Path $distRoot 'MasterRGB-0.3.0-Portable.zip'
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
 
@@ -229,8 +226,8 @@ Copy-Item $zipPath $kitDist -Force
 
 # Inno Setup compilation is separate and uses the mirrored kit\dist folder.
 Write-Host ''
-Write-Host 'Build MasterRGB 0.2.3 Preview concluído.' -ForegroundColor Green
+Write-Host 'Build MasterRGB 0.3.0 concluído.' -ForegroundColor Green
 Write-Host "Executável: $(Join-Path $portableDir 'MasterRGB.exe')"
 Write-Host "Portable:   $zipPath"
 Write-Host 'Para gerar o instalador, compile installer\MasterRGB.iss com o Inno Setup 6.'
-Write-Host 'Os temas MasterRGB são carregados pelo próprio executável; o seletor também fica em Configurações > Aparência.'
+Write-Host 'Os temas MasterRGB são carregados pelo próprio executável; o seletor fica em Configurações > Geral > Tema da interface.'

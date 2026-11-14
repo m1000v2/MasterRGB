@@ -1,0 +1,18 @@
+# Build outputs and locally packaged release artifacts
+dist/
+build/
+out/
+*.log
+
+# Visual Studio / MSVC intermediate files
+.vs/
+*.user
+*.suo
+*.pdb
+*.ilk
+*.obj
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

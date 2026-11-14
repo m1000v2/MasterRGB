@@ -1,8 +1,8 @@
 {
   "product": "MasterRGB",
   "paypalUrl": "",
-  "paypalQrFile": "paypal-qr.png",
-  "githubRepository": "",
-  "githubUrl": "",
+  "githubRepository": "m1000v2/MasterRGB",
+  "githubUrl": "https://github.com/m1000v2/MasterRGB",
+  "updatesUrl": "https://github.com/m1000v2/MasterRGB/releases",
   "supportLabel": "Apoiar o MasterRGB"
 }

@@ -1,15 +1,17 @@
 # MasterRGB
 
-Projeto personalizado baseado no OpenRGB para controle RGB no Windows.
+Controle de iluminação RGB para Windows, baseado no OpenRGB (GPL-2.0), com interface em português, tema claro/escuro e instalador nativo.
 
-## Pacote de compilação
+## Versão atual
 
-O Build Kit da versão 0.2.3 será publicado neste repositório após a inclusão dos arquivos do pacote e a validação do fluxo de compilação.
+**0.3.0** — páginas Início, Apoiar e Sobre reescritas; tema aplicado ao vivo; instalador sem console; inicialização com o Windows pelo atalho da pasta Inicializar.
 
-## Estado da versão 0.2.3
+## Conteúdo
 
-- Pacote de preparação de CI criado.
-- Compilação e instalação em máquina real ainda precisam ser validadas.
-- A restauração automática do último perfil precisa de teste no Windows.
+- `patches/` — integração MasterRGB aplicada sobre a base OpenRGB.
+- `themes/` — temas Claro e Escuro.
+- `installer/` — instalador Inno Setup 6.
+- `scripts/Build-MasterRGB.ps1` — compilação e empacotamento.
+- `docs/` — compatibilidade, processo de release e checklist de teste.
 
-Consulte `README-PTBR.md` e `docs/` quando o pacote completo for enviado.
+Consulte `README-PTBR.md` para compilar e `docs/SETUP-GITHUB-PUBLIC-RELEASES-PTBR.md` para publicar.

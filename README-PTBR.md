@@ -1,47 +1,61 @@
-﻿# MasterRGB 0.2.3 — Preview Build Kit
+﻿# MasterRGB 0.3.0 — Build Kit
 
-Esta revisão corrige os problemas de identidade, codificação e tema relatados no teste da 0.2.2. O pacote é código-fonte e scripts de compilação; não é um executável pré-compilado.
+MasterRGB é uma adaptação do OpenRGB (GPL-2.0) para Windows, com identidade própria,
+páginas em português e instalador nativo. Este pacote contém o código de integração e
+os scripts de compilação; a base OpenRGB é baixada automaticamente.
 
-## Mudanças
-- Título e página Sobre com identidade MasterRGB.
-- A subaba "Sobre o MasterRGB" aparece dentro de Informações. A lista lateral dessa área é subnavegação técnica por dispositivo e permanece disponível por projeto do OpenRGB.
-- Seletor de tema funcional em **Configurações > Aparência**, aplica na hora e salva a preferência.
-- Texto português da aba Apoiar escrito em UTF-8 com BOM para evitar mojibake no MSVC.
-- Botão de doação usa o link PayPal HTTPS configurado pelo usuário; o campo permanece vazio até inserir o endereço real.
-- Rebuild limpa apenas os arquivos de UI/branding alterados por versões anteriores, preservando o registro da Red Devil RX 6700 XT.
+## Páginas do aplicativo
+
+- **Início** — painel com os dispositivos detectados e atalhos para controles, configurações e atualizações.
+- **Dispositivos** — controles RGB de cada dispositivo (motor original do OpenRGB).
+- **Informações** — abre em "Sobre o MasterRGB"; os dados de cada dispositivo continuam na lista lateral.
+- **Configurações** — em Geral > Tema da interface, o tema Claro/Escuro/Automático é aplicado na hora e salvo em `%APPDATA%\MasterRGB\theme.txt`.
+- **Apoiar** — botões prontos para o GitHub e para o PayPal, quando configurado. Não há campos para o usuário preencher.
+
+## Iniciar com o Windows
+
+O instalador oferece a opção **Iniciar o MasterRGB junto com o Windows**. Ela cria
+`MasterRGB.lnk` na pasta Inicializar do usuário. O Windows mostra esse item em
+**Gerenciador de Tarefas > Aplicativos de inicialização**, onde pode ser desativado.
+A mesma opção existe dentro do aplicativo em **Configurações > Geral**.
+Nenhuma tarefa agendada e nenhuma janela de PowerShell são usadas.
+
+Quando iniciado pelo Windows, o aplicativo abre minimizado e carrega o último perfil
+aplicado no motor RGB (`%APPDATA%\OpenRGB\MasterRGB_LastProfile.txt`).
 
 ## Requisitos
+
 - Windows 10/11 x64.
 - Git for Windows.
 - Visual Studio 2022/2026 com Desktop development with C++, MSVC v143 14.4x e Windows SDK.
 - Qt 6.8.3 `msvc2022_64` em `C:\Qt\6.8.3\msvc2022_64`.
-- JOM opcional; se não estiver instalado, o script usa NMAKE do MSVC v143.
-- Inno Setup 6 opcional para criar instalador.
+- JOM opcional; sem ele o script usa NMAKE do MSVC v143.
+- Inno Setup 6 para gerar o instalador.
 
 ## Compilar
-Extraia o pacote, abra PowerShell na pasta raiz `MasterRGB_v0.2.3` e execute:
+
+Extraia o pacote, abra PowerShell na pasta raiz e execute:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\Build-MasterRGB.ps1
 ```
 
-O script restaura os arquivos originais de interface/branding do clone e reaplica os patches de identidade, Red Devil e registro do último perfil carregado. O caminho de build continua em `%USERPROFILE%\Documents\MasterRGB-Build`. Os perfis desta branch são `.orp` e ficam em `%APPDATA%\OpenRGB`.
+O script restaura os arquivos originais de interface, aplica a integração MasterRGB,
+compila e gera `dist\MasterRGB-0.3.0-Portable.zip`. Para gerar o instalador, compile
+`installer\MasterRGB.iss` com o Inno Setup 6.
 
-## Tema
-Abra **Configurações > Aparência**. A escolha Escuro/Claro aplica imediatamente e fica salva em `%APPDATA%\MasterRGB\theme.txt`.
+O caminho de build fica em `%USERPROFILE%\Documents\MasterRGB-Build`. Os perfis são
+`.orp` e ficam em `%APPDATA%\OpenRGB`.
 
 ## Apoiar
-Abra a aba **Apoiar**, cole o link PayPal.me ou PayPal.com real e clique em Salvar links. O link antigo do projeto YT Desk Monitor não foi recuperado dos arquivos consultados nesta sessão; por isso ele não foi inventado.
+
+Os links ficam em `config/support.json`. O GitHub já está configurado. Para doações,
+preencha `paypalUrl` com um endereço HTTPS oficial do PayPal; enquanto estiver vazio,
+o botão de doação simplesmente não aparece.
 
 ## Segurança e licença
-A base WinRing0 é legada e possui vulnerabilidade conhecida. Não desative Defender, Integridade da Memória ou bloqueios de driver para forçar o carregamento. Preservar GPL-2.0, `LICENSE` e `NOTICE.md` ao redistribuir.
 
-
-## Compilação automática no GitHub
-
-O workflow `.github/workflows/windows-build.yml` prepara Qt 6.8.3, compila no runner Windows 2022, empacota a versão portátil, gera o instalador Inno Setup e calcula SHA-256. Uma execução manual gera artefatos na página Actions. Uma tag `v*` também publica os arquivos no repositório público de Releases quando `MASTER_RGB_RELEASE_TOKEN` estiver configurado no repositório privado.
-
-## Último perfil e inicialização
-
-Esta branch salva perfis no formato `.orp` em `%APPDATA%\OpenRGB`. Depois que um perfil é carregado com sucesso pela interface ou pelo comando de inicialização, o núcleo registra seu nome em `MasterRGB_LastProfile.txt`. A tarefa opcional `MasterRGB Startup` lê esse registro no próximo logon, inicia o programa com o perfil e escreve o resultado em `%APPDATA%\MasterRGB\startup.log`. A restauração precisa ser validada no hardware de teste; a linha `CONFIRMADO` indica que o núcleo atualizou o registro durante a carga.
+A base WinRing0 é legada e possui vulnerabilidade conhecida. Não desative Defender,
+Integridade da Memória ou bloqueios de driver para forçar o carregamento. Preserve
+GPL-2.0, `LICENSE` e `NOTICE.md` ao redistribuir.

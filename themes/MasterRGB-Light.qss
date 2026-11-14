@@ -46,8 +46,14 @@ QLabel#MasterRGBDeviceCategory { color: #6846D8; font-size: 8pt; font-weight: 70
 QLabel#MasterRGBDeviceName { color: #202938; font-size: 11pt; font-weight: 600; }
 QPushButton#MasterRGBOpenDeviceButton { background-color: #E7E0FF; border-color: #927AFF; color: #30205F; }
 
-QLabel#MasterRGBAppearanceTitle { color: #202938; font-size: 20pt; font-weight: 700; }
-QLabel#MasterRGBAppearanceDescription { color: #647084; font-size: 10pt; }
-QLabel#MasterRGBThemeStatus { color: #287B54; font-size: 9pt; }
+QWidget#MasterRGBHomePage { background-color: #F7F8FB; }
+QLabel#MasterRGBHomeTitle { color: #202938; font-size: 22pt; font-weight: 700; }
+QLabel#MasterRGBHomeDescription { color: #5C697F; font-size: 10pt; }
+QLabel#MasterRGBHomeCount { color: #6846D8; font-size: 9pt; font-weight: 700; }
+QLabel#MasterRGBSupportLink { color: #5C697F; font-size: 9pt; }
+QPushButton#MasterRGBHomeDevices { background-color: #6846D8; border-color: #927AFF; color: #FFFFFF; font-weight: 700; }
+QPushButton#MasterRGBHomeSettings { }
+QPushButton#MasterRGBHomeUpdates { }
+QPushButton#MasterRGBUpdatesButton { }
 QGroupBox { color: #39465A; border: 1px solid #D6DCE7; border-radius: 8px; margin-top: 12px; padding: 10px; }
 QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }

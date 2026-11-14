@@ -1,20 +1,15 @@
-# Configurar publicação pública do MasterRGB
+# Publicar uma versão do MasterRGB
 
-O código-fonte e o workflow de compilação ficam no repositório privado `m1000v2/MasterRGB`. Os arquivos destinados aos usuários finais são publicados no repositório público `m1000v2/MasterRGB-Releases`.
+O código e as Releases ficam no mesmo repositório, `m1000v2/MasterRGB`. O workflow usa o `GITHUB_TOKEN` padrão do Actions, com permissão `contents: write`; não é necessário criar token separado.
 
-## Preparação única
+## Publicar
 
-1. Criar `MasterRGB-Releases` como repositório **público** na conta `m1000v2`. Pode iniciar com um README.
-2. Criar um token Fine-grained em GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens.
-3. Em Resource owner, selecionar `m1000v2`; em Repository access, selecionar somente `MasterRGB-Releases`.
-4. Conceder `Contents: Read and write`.
-5. No repositório privado `MasterRGB`, abrir Settings → Secrets and variables → Actions → New repository secret. Nome: `MASTER_RGB_RELEASE_TOKEN`. Valor: o token criado.
+1. Envie o código para `main`.
+2. Crie e envie uma tag, por exemplo `v0.3.0`.
+3. O workflow **MasterRGB Windows Build** compila, gera o ZIP portátil, o instalador e `SHA256SUMS.txt`, e anexa os três arquivos à Release da tag.
 
-Não colocar o token no código-fonte, em arquivos `.ps1`, no instalador ou no aplicativo. O workflow o usa apenas durante a publicação.
+Também é possível executar o workflow manualmente em Actions → Run workflow. Nesse caso os arquivos ficam como artefatos da execução, sem criar Release.
 
-## Como publicar uma versão de teste
+## Enquanto o repositório for privado
 
-- Executar Actions → MasterRGB Windows Build → Run workflow para compilar e anexar os arquivos como artefatos da execução privada.
-- Para criar uma Release pública, enviar uma tag `v*`, por exemplo `v0.2.3-preview`. O workflow compila novamente e publica o ZIP portátil, o instalador e `SHA256SUMS.txt` no repositório público.
-
-A publicação pública depende de o repositório `MasterRGB-Releases` existir e do segredo `MASTER_RGB_RELEASE_TOKEN` estar configurado. Sem o segredo, a compilação e os artefatos da execução continuam disponíveis, mas a Release pública é ignorada.
+A Release e os arquivos só podem ser baixados por quem tem acesso ao repositório. Para distribuir publicamente, torne o repositório público ou crie um repositório público separado e ajuste o passo de publicação do workflow.

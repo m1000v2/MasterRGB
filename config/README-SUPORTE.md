@@ -1,10 +1,10 @@
 # Suporte, PayPal e GitHub
 
-O Control Center permite preencher estes dados na tela Suporte/Apoiar. Eles são salvos em `%APPDATA%\MasterRGB\support.json`.
+Estes dados ficam em `config/support.json` (valores padrão do produto) e podem ser sobrescritos por `%APPDATA%\MasterRGB\support.json` em uma instalação existente. Não há mais tela para o usuário preencher links.
 
-- `paypalUrl`: link HTTPS PayPal.me ou PayPal.com.
-- `paypalQrFile`: nome opcional da imagem QR em `config`.
+- `paypalUrl`: link HTTPS PayPal.me ou PayPal.com. Se ficar vazio, o botão de doação não aparece.
 - `githubRepository`: `usuario/MasterRGB`.
-- `githubUrl`: URL pública do repositório.
+- `githubUrl`: URL do repositório.
+- `updatesUrl`: URL da página de Releases.
 
-O link PayPal do YT Desk Monitor não estava presente nos arquivos acessíveis nesta sessão. O campo permanece vazio até receber o mesmo link; não foi inventado um destino.
+O GitHub já está configurado com `m1000v2/MasterRGB`. O link de doação continua vazio até existir um endereço real.
