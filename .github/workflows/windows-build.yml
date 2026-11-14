@@ -1,0 +1,94 @@
+name: MasterRGB Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+env:
+  MASTER_RGB_RELEASE_TOKEN: ${{ secrets.MASTER_RGB_RELEASE_TOKEN }}
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6.8.3 for MSVC 2022 x64
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          cache: true
+
+      - name: Build MasterRGB portable package
+        shell: pwsh
+        run: |
+          if (-not $env:QT_ROOT_DIR) { throw 'Qt root was not exported by install-qt-action.' }
+          $env:MASTER_RGB_QT_ROOT = $env:QT_ROOT_DIR
+          # Build-MasterRGB.ps1 uses NMAKE from the selected MSVC v143 toolset
+          # when JOM is not installed; no extra JOM bootstrap is required.
+          .\scripts\Build-MasterRGB.ps1 -Workspace "$env:RUNNER_TEMP\MasterRGB-Build"
+
+      - name: Build Inno Setup installer
+        shell: pwsh
+        run: |
+          $candidates = @(
+            (Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'),
+            (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe')
+          )
+          $isccPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $isccPath) { throw 'Inno Setup 6 (ISCC.exe) não está disponível no runner.' }
+          & $isccPath .\installer\MasterRGB.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup falhou: $LASTEXITCODE" }
+
+      - name: Create SHA-256 checksums
+        shell: pwsh
+        run: |
+          $files = @(
+            '.\dist\MasterRGB-0.2.3-Preview-Portable.zip',
+            '.\dist\MasterRGB-Setup-0.2.3-Preview.exe'
+          )
+          foreach ($file in $files) { if (-not (Test-Path $file)) { throw "Artefato ausente: $file" } }
+          $lines = foreach ($file in $files) {
+            $hash = (Get-FileHash -Algorithm SHA256 $file).Hash.ToLowerInvariant()
+            "$hash  $([IO.Path]::GetFileName($file))"
+          }
+          $lines | Set-Content '.\dist\SHA256SUMS.txt' -Encoding ASCII
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MasterRGB-0.2.3-Preview-Windows
+          if-no-files-found: error
+          path: |
+            dist/MasterRGB-0.2.3-Preview-Portable.zip
+            dist/MasterRGB-Setup-0.2.3-Preview.exe
+            dist/SHA256SUMS.txt
+
+      - name: Publish assets to public releases repository
+        if: startsWith(github.ref, 'refs/tags/') && env.MASTER_RGB_RELEASE_TOKEN != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: m1000v2/MasterRGB-Releases
+          token: ${{ env.MASTER_RGB_RELEASE_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: MasterRGB ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, 'preview') }}
+          draft: false
+          files: |
+            dist/MasterRGB-0.2.3-Preview-Portable.zip
+            dist/MasterRGB-Setup-0.2.3-Preview.exe
+            dist/SHA256SUMS.txt
+
+      - name: Explain skipped public release
+        if: startsWith(github.ref, 'refs/tags/') && env.MASTER_RGB_RELEASE_TOKEN == ''
+        shell: pwsh
+        run: Write-Host 'Build concluído e artefatos anexados à execução. A publicação pública foi ignorada porque MASTER_RGB_RELEASE_TOKEN ainda não foi configurado.'
