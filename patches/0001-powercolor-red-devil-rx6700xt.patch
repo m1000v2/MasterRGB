@@ -1,0 +1,16 @@
+From: MasterRGB build team
+Subject: [PATCH] Register PowerColor Red Devil RX 6700 XT
+
+Backport the detector registration for subsystem 148C:2409 (device 1002:73DF)
+using the existing Red Devil V1 controller at I2C address 0x22.
+
+This is intentionally a one-line hardware registration change. The controller
+implementation already exists in the WinRing0 RC2 source tree.
+
+--- a/Controllers/PowerColorGPUController/PowerColorGPUControllerDetect.cpp
++++ b/Controllers/PowerColorGPUController/PowerColorGPUControllerDetect.cpp
+@@ -47,6 +47,7 @@
+ REGISTER_I2C_PCI_DETECTOR("PowerColor Red Devil RX5700",            DetectPowerColorRedDevilGPUControllersV1, AMD_GPU_VEN, AMD_NAVI10_DEV,  POWERCOLOR_SUB_VEN, POWERCOLOR_RED_DEVIL_RX5700_SUB_DEV,                0x22);
+ REGISTER_I2C_PCI_DETECTOR("PowerColor Red Devil RX5700XT",          DetectPowerColorRedDevilGPUControllersV1, AMD_GPU_VEN, AMD_NAVI10_DEV,  POWERCOLOR_SUB_VEN, POWERCOLOR_RED_DEVIL_RX5700XT_SUB_DEV,              0x22);
++REGISTER_I2C_PCI_DETECTOR("PowerColor Red Devil RX6700XT",          DetectPowerColorRedDevilGPUControllersV1, AMD_GPU_VEN, AMD_NAVI22_DEV,  POWERCOLOR_SUB_VEN, POWERCOLOR_RED_DEVIL_RX6700XT_SUB_DEV,              0x22);
+ REGISTER_I2C_PCI_DETECTOR("PowerColor Red Devil RX6750XT",          DetectPowerColorRedDevilGPUControllersV1, AMD_GPU_VEN, AMD_NAVI22_DEV,  POWERCOLOR_SUB_VEN, POWERCOLOR_RED_DEVIL_RX6750XT_SUB_DEV,              0x22);

@@ -1,0 +1,156 @@
+/* MasterRGB Dark — restrained QSS.
+   IMPORTANT: do not set a universal font family or a background on all QWidget.
+   OpenRGB contains custom-drawn widgets and its own icon font; global selectors
+   hide icons and can blank the HSV/color-wheel widget. */
+
+QMainWindow, QDialog {
+    background-color: #111722;
+    color: #E8EDF7;
+}
+
+QMenuBar, QMenu {
+    background-color: #171F2D;
+    color: #E8EDF7;
+    border: 1px solid #29364B;
+}
+QMenu::item { padding: 7px 22px; }
+QMenu::item:selected { background-color: #7048E8; color: #FFFFFF; }
+
+QTabWidget::pane {
+    background-color: #171F2D;
+    border: 1px solid #2C394F;
+    border-radius: 7px;
+    top: -1px;
+}
+QTabBar::tab {
+    background-color: #1A2433;
+    color: #AEB9CC;
+    border: 1px solid #2C394F;
+    border-bottom: none;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    padding: 8px 14px;
+    margin-right: 3px;
+}
+QTabBar::tab:selected {
+    background-color: #252F42;
+    color: #FFFFFF;
+    border-color: #7658E8;
+}
+QTabBar::tab:hover:!selected { background-color: #222D3E; color: #FFFFFF; }
+
+QPushButton, QToolButton {
+    background-color: #29364B;
+    color: #F4F6FC;
+    border: 1px solid #3A4964;
+    border-radius: 7px;
+    padding: 7px 13px;
+}
+QPushButton:hover, QToolButton:hover {
+    background-color: #35445F;
+    border-color: #927AFF;
+}
+QPushButton:pressed, QToolButton:pressed { background-color: #6040C9; }
+QPushButton:disabled, QToolButton:disabled {
+    background-color: #202937;
+    color: #69758A;
+    border-color: #293244;
+}
+
+QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background-color: #111A27;
+    color: #E8EDF7;
+    border: 1px solid #35435B;
+    border-radius: 6px;
+    padding: 5px 7px;
+    selection-background-color: #7048E8;
+}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid #927AFF;
+}
+QComboBox QAbstractItemView {
+    background-color: #1A2433;
+    color: #E8EDF7;
+    border: 1px solid #53617B;
+    selection-background-color: #7048E8;
+}
+
+QTreeView, QListView, QTableView, QTableWidget, QTreeWidget {
+    background-color: #151E2B;
+    alternate-background-color: #1A2433;
+    color: #E8EDF7;
+    border: 1px solid #2C394F;
+    gridline-color: #2B3548;
+    selection-background-color: #4F3A99;
+}
+QHeaderView::section {
+    background-color: #222D3E;
+    color: #C7D0E0;
+    border: none;
+    border-right: 1px solid #35435A;
+    border-bottom: 1px solid #35435A;
+    padding: 7px;
+    font-weight: 600;
+}
+
+QCheckBox, QRadioButton { spacing: 7px; color: #DCE4F2; }
+QCheckBox::indicator, QRadioButton::indicator { width: 15px; height: 15px; }
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: #7957E8;
+    border: 1px solid #A58FFF;
+}
+QCheckBox::indicator:unchecked, QRadioButton::indicator:unchecked {
+    background-color: #111A27;
+    border: 1px solid #68758B;
+}
+
+QSlider::groove:horizontal { height: 6px; background: #354158; border-radius: 3px; }
+QSlider::sub-page:horizontal { background: #8A6BFF; border-radius: 3px; }
+QSlider::handle:horizontal {
+    background: #E8E1FF;
+    border: 2px solid #8A6BFF;
+    width: 14px;
+    margin: -6px 0;
+    border-radius: 8px;
+}
+
+QScrollBar:vertical { background: #151E2B; width: 11px; margin: 0; }
+QScrollBar::handle:vertical { background: #46536B; min-height: 24px; border-radius: 5px; }
+QScrollBar::handle:vertical:hover { background: #8A6BFF; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar:horizontal { background: #151E2B; height: 11px; margin: 0; }
+QScrollBar::handle:horizontal { background: #46536B; min-width: 24px; border-radius: 5px; }
+QScrollBar::handle:horizontal:hover { background: #8A6BFF; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
+
+QStatusBar { background: #171F2D; color: #AAB6CA; border-top: 1px solid #2C394F; }
+QToolTip { background: #252F42; color: #FFFFFF; border: 1px solid #927AFF; padding: 5px; }
+
+/* New native MasterRGB support tab */
+QLabel#MasterRGBSupportTitle { color: #FFFFFF; font-size: 20pt; font-weight: 700; }
+QLabel#MasterRGBSupportDescription { color: #C5D0E0; font-size: 11pt; }
+QLabel#MasterRGBSupportNote { color: #9AA8BE; font-size: 9pt; }
+QPushButton#MasterRGBDonateButton {
+    background-color: #6846D8;
+    border: 1px solid #927AFF;
+    padding: 11px 20px;
+    font-weight: 700;
+}
+QPushButton#MasterRGBDonateButton:hover { background-color: #795BE8; }
+QPushButton#MasterRGBGithubButton { padding: 11px 20px; }
+QWidget#MasterRGBSupportPage { background-color: #151E2B; }
+QWidget#MasterRGBDashboardPage { background-color: #151E2B; }
+QLabel#MasterRGBDashboardTitle { color: #FFFFFF; font-size: 22pt; font-weight: 700; }
+QLabel#MasterRGBDashboardSubtitle { color: #AAB6CA; font-size: 10pt; }
+QLabel#MasterRGBDashboardCount { color: #B9A6FF; font-size: 9pt; font-weight: 700; }
+QFrame#MasterRGBDeviceCard { background-color: #1A2433; border: 1px solid #35435B; border-radius: 10px; }
+QLabel#MasterRGBDeviceCategory { color: #A99AFF; font-size: 8pt; font-weight: 700; }
+QLabel#MasterRGBDeviceName { color: #F1F4FA; font-size: 11pt; font-weight: 600; }
+QPushButton#MasterRGBOpenDeviceButton { background-color: #342B55; border-color: #7957E8; }
+
+QLabel#MasterRGBAppearanceTitle { color: #FFFFFF; font-size: 20pt; font-weight: 700; }
+QLabel#MasterRGBAppearanceDescription { color: #AAB6CA; font-size: 10pt; }
+QLabel#MasterRGBThemeStatus { color: #8FD9B5; font-size: 9pt; }
+QGroupBox { color: #C9D2E2; border: 1px solid #35435B; border-radius: 8px; margin-top: 12px; padding: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
