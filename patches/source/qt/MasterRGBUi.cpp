@@ -314,7 +314,6 @@ namespace
 
         if(deviceCount <= 0)
         {
-            countLabel->setText("Nenhum dispositivo detectado ainda. Use Buscar dispositivos na barra inferior.");
             return;
         }
 
@@ -491,9 +490,6 @@ namespace
         profileHint->setObjectName("MasterRGBPanelHint");
         profileHint->setWordWrap(true);
 
-        QHBoxLayout* profileRow = new QHBoxLayout();
-        profileRow->setSpacing(10);
-
         QComboBox* profileCombo = new QComboBox(profilePanel);
         profileCombo->setObjectName("MasterRGBHomeProfile");
         profileCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -503,9 +499,12 @@ namespace
         applyButton->setObjectName("MasterRGBHomeApply");
         applyButton->setCursor(Qt::PointingHandCursor);
         applyButton->setMinimumHeight(34);
+        applyButton->setMinimumWidth(150);
 
-        profileRow->addWidget(profileCombo, 1);
-        profileRow->addWidget(applyButton);
+        QHBoxLayout* applyRow = new QHBoxLayout();
+        applyRow->setSpacing(10);
+        applyRow->addStretch(1);
+        applyRow->addWidget(applyButton);
 
         QLabel* profileStatus = new QLabel(profilePanel);
         profileStatus->setObjectName("MasterRGBHomeProfileStatus");
@@ -513,7 +512,8 @@ namespace
 
         profileLayout->addWidget(profileTitle);
         profileLayout->addWidget(profileHint);
-        profileLayout->addLayout(profileRow);
+        profileLayout->addWidget(profileCombo);
+        profileLayout->addLayout(applyRow);
         profileLayout->addWidget(profileStatus);
 
         layout->addWidget(profilePanel);
@@ -579,12 +579,23 @@ namespace
         {
             QTimer* timer = new QTimer(home);
             timer->setInterval(750);
+            timer->setProperty("ticks", 0);
 
             QObject::connect(timer, &QTimer::timeout, home, [=]()
             {
                 if(deviceTabs && deviceTabs->count() > 0)
                 {
                     PopulateHome(window, home, mainTabs, deviceTabs, grid, countLabel);
+                    timer->stop();
+                    return;
+                }
+
+                const int ticks = timer->property("ticks").toInt() + 1;
+                timer->setProperty("ticks", ticks);
+
+                if(ticks > 26)
+                {
+                    countLabel->setText("Nenhum dispositivo detectado. Use Buscar dispositivos na barra inferior.");
                     timer->stop();
                 }
             });
@@ -751,6 +762,13 @@ namespace
 
         TabLabel* label = new TabLabel(OpenRGBFont::bulb, "Início", (char*)"Início", (char*)"MasterRGB");
         mainTabs->tabBar()->setTabButton(index, QTabBar::LeftSide, label);
+
+        /*-------------------------------------------------*\
+        | Open with the panel visible. The dialog restores  |
+        | the last device tab while it builds, so the final |
+        | attach puts the dashboard in front.               |
+        \*-------------------------------------------------*/
+        mainTabs->setCurrentIndex(index);
     }
 
     void AddSupportPage(QTabWidget* mainTabs)
