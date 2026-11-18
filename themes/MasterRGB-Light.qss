@@ -57,3 +57,14 @@ QPushButton#MasterRGBHomeUpdates { }
 QPushButton#MasterRGBUpdatesButton { }
 QGroupBox { color: #39465A; border: 1px solid #D6DCE7; border-radius: 8px; margin-top: 12px; padding: 10px; }
 QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; }
+
+/* 0.4.0 dashboard profile panel and support QR */
+QFrame#MasterRGBPanel { background-color: #FFFFFF; border: 1px solid #D6DCE7; border-radius: 10px; }
+QLabel#MasterRGBPanelTitle { color: #202938; font-size: 12pt; font-weight: 700; }
+QLabel#MasterRGBPanelHint { color: #647084; font-size: 9pt; }
+QLabel#MasterRGBHomeProfileStatus { color: #6846D8; font-size: 9pt; }
+QLabel#MasterRGBPayPalQr { background-color: #FFFFFF; border: 1px solid #D6DCE7; border-radius: 10px; }
+QLabel#MasterRGBUpdateStatus { color: #4E39A8; font-size: 10pt; padding: 4px 0; }
+QLabel#MasterRGBSupportText { color: #4A576B; font-size: 10pt; }
+QPushButton#MasterRGBHomeApply { background-color: #6846D8; border-color: #927AFF; color: #FFFFFF; font-weight: 700; }
+QPushButton#MasterRGBHomeApply:hover { background-color: #795BE8; }

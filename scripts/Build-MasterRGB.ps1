@@ -5,6 +5,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$VersionFile = Join-Path $PSScriptRoot '..\patches\source\qt\MasterRGBVersion.h'
+$Version = '0.4.0'
+if (Test-Path -LiteralPath $VersionFile) {
+    $versionMatch = [regex]::Match((Get-Content -Raw -LiteralPath $VersionFile), '#define\s+MASTERRGB_VERSION\s+"([^"]+)"')
+    if ($versionMatch.Success) { $Version = $versionMatch.Groups[1].Value }
+}
 $SourceUrl = 'https://gitlab.com/CalcProgrammer1/OpenRGB.git'
 $SourceBranch = 'release_candidate_1.0rc2wr0'
 $QtRoot = if ($env:MASTER_RGB_QT_ROOT) { $env:MASTER_RGB_QT_ROOT } else { 'C:\Qt\6.8.3\msvc2022_64' }
@@ -210,7 +216,7 @@ Copy-Item (Join-Path $PSScriptRoot '..\LICENSE') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\NOTICE.md') $portableDir -Force
 Copy-Item (Join-Path $PSScriptRoot '..\CHANGELOG.md') $portableDir -Force
 
-$zipPath = Join-Path $distRoot 'MasterRGB-0.3.0-Portable.zip'
+$zipPath = Join-Path $distRoot "MasterRGB-$Version-Portable.zip"
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
 
@@ -226,7 +232,7 @@ Copy-Item $zipPath $kitDist -Force
 
 # Inno Setup compilation is separate and uses the mirrored kit\dist folder.
 Write-Host ''
-Write-Host 'Build MasterRGB 0.3.0 concluído.' -ForegroundColor Green
+Write-Host "Build MasterRGB $Version concluído." -ForegroundColor Green
 Write-Host "Executável: $(Join-Path $portableDir 'MasterRGB.exe')"
 Write-Host "Portable:   $zipPath"
 Write-Host 'Para gerar o instalador, compile installer\MasterRGB.iss com o Inno Setup 6.'

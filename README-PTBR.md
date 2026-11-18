@@ -6,11 +6,17 @@ os scripts de compilação; a base OpenRGB é baixada automaticamente.
 
 ## Páginas do aplicativo
 
-- **Início** — painel com os dispositivos detectados e atalhos para controles, configurações e atualizações.
+- **Início** — painel com os dispositivos detectados e controle de perfis: escolha um perfil salvo e aplique sem sair da tela.
 - **Dispositivos** — controles RGB de cada dispositivo (motor original do OpenRGB).
-- **Informações** — abre em "Sobre o MasterRGB"; os dados de cada dispositivo continuam na lista lateral.
+- **Informações** — dados de cada dispositivo na lista lateral; "Sobre o MasterRGB" mostra versão, Qt, Windows e o link do projeto.
 - **Configurações** — em Geral > Tema da interface, o tema Claro/Escuro/Automático é aplicado na hora e salvo em `%APPDATA%\MasterRGB\theme.txt`.
-- **Apoiar** — botões prontos para o GitHub e para o PayPal, quando configurado. Não há campos para o usuário preencher.
+- **Apoiar** — doação voluntária por PayPal (com QR Code) e link do projeto. Nenhum campo para preencher e nada é enviado automaticamente.
+
+## Atualizações
+
+O aplicativo consulta as releases públicas do GitHub ao abrir e avisa quando existe
+versão nova, com botão para baixar. O download e a instalação só acontecem com a sua
+confirmação; nada é atualizado em segundo plano.
 
 ## Iniciar com o Windows
 
@@ -42,7 +48,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 O script restaura os arquivos originais de interface, aplica a integração MasterRGB,
-compila e gera `dist\MasterRGB-0.3.0-Portable.zip`. Para gerar o instalador, compile
+compila e gera `dist\MasterRGB-0.4.0-Portable.zip`. Para gerar o instalador, compile
 `installer\MasterRGB.iss` com o Inno Setup 6.
 
 O caminho de build fica em `%USERPROFILE%\Documents\MasterRGB-Build`. Os perfis são
@@ -50,9 +56,9 @@ O caminho de build fica em `%USERPROFILE%\Documents\MasterRGB-Build`. Os perfis 
 
 ## Apoiar
 
-Os links ficam em `config/support.json`. O GitHub já está configurado. Para doações,
-preencha `paypalUrl` com um endereço HTTPS oficial do PayPal; enquanto estiver vazio,
-o botão de doação simplesmente não aparece.
+Os links ficam em `config/support.json`. O GitHub e a doação por PayPal já estão
+configurados. O QR Code exibido na aba Apoiar é `assets/paypal-qr.png`; se o link mudar,
+gere a imagem novamente a partir da nova URL.
 
 ## Segurança e licença
 

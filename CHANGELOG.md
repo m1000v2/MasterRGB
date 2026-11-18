@@ -1,15 +1,25 @@
-# MasterRGB 0.3.0
+# MasterRGB 0.4.0
 
 ## O que mudou nesta versão
 
-- **Início** substitui a antiga "Central de iluminação": a página agora explica para que serve, mostra os dispositivos detectados e leva direto aos controles, às configurações e às atualizações.
-- **Apoiar** deixou de pedir links ao usuário. Os endereços configurados (GitHub e futuras doações) aparecem como botões prontos e a página não mostra mais campos vazios com texto de exemplo.
-- **Sobre o MasterRGB** mostra a versão real do produto, a versão do Qt, a versão do Windows e o link do projeto. Os valores não somem mais ao trocar o idioma.
-- **Informações** abre sempre em "Sobre o MasterRGB" ao clicar na aba, em vez de reabrir os dados do último dispositivo.
-- **Tema claro/escuro** funciona de fato: troca a paleta do Qt e o QSS na hora, em Configurações > Geral > Tema da interface. A subaba "Aparência" quebrada foi removida.
-- **Instalador** nativo em português: sem PowerShell, sem janela de console e sem tela de DOS. Atalhos apontam direto para o executável.
-- **Iniciar com o Windows** usa o atalho da pasta Inicializar (`MasterRGB.lnk`), o mesmo exibido em Gerenciador de Tarefas > Aplicativos de inicialização, onde pode ser desativado. O instalador oferece a opção e o aplicativo também tem a caixa "Iniciar com o Windows" em Configurações > Geral.
-- **Último perfil**: quando iniciado minimizado pelo Windows, o MasterRGB carrega o último perfil aplicado, sem abrir console.
+- **Identidade completa**: o executável agora carrega o ícone do MasterRGB nos recursos
+  do Windows, com versão 0.4.0.0 nos detalhes do arquivo. Atalho da área de trabalho,
+  barra de tarefas, Alt+Tab, instalador, desinstalador e janela usam o mesmo ícone.
+- **Início virou painel de verdade**: mostra os dispositivos detectados e permite
+  escolher e aplicar um perfil salvo sem sair da tela. Os atalhos que só repetiam as
+  abas foram removidos.
+- **Apoiar com PayPal**: link de doação configurado e QR Code gerado no próprio
+  aplicativo, com o aviso de que a doação é voluntária.
+- **Atualização dentro do app**: o MasterRGB consulta as releases públicas do GitHub e
+  avisa quando existe versão nova, com botão para baixar. Nada é baixado ou instalado
+  sem confirmação.
+- **Desinstalação com escolha**: o desinstalador pergunta se os perfis e configurações
+  devem ser mantidos (Sim) ou removidos junto com o aplicativo (Não).
+- **Marca corrigida**: título da janela, mensagem de detecção, links, rótulo do GitHub
+  e descrição na aba Informações deixaram de dizer OpenRGB. A atribuição à base
+  OpenRGB (GPL-2.0) permanece na página Sobre e no NOTICE.md.
+- **Versão em um lugar só**: `patches/source/qt/MasterRGBVersion.h` alimenta o
+  executável, o ZIP e o instalador.
 
 ## Base
 
@@ -18,6 +28,6 @@
 
 ## Ainda pendente
 
-- Validar em máquina limpa e no hardware de referência antes de uma versão estável.
-- Configurar o link de doações PayPal em `config/support.json` quando existir.
-- O link do GitHub só abre para quem tem acesso ao repositório enquanto ele estiver privado.
+- Modo de efeitos animados (vídeo/GIF) com o aplicativo minimizado: planejado para a 0.5.0.
+- Perfis continuam em `%APPDATA%\OpenRGB` para não quebrar configurações existentes.
+- Validar em máquina limpa e no hardware de referência.

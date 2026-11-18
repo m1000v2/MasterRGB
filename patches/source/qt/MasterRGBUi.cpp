@@ -31,13 +31,18 @@
 #include <QCoreApplication>
 #include <QStyle>
 #include <QMetaObject>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QScrollArea>
+#include <QSizePolicy>
 
 #include "MasterRGBUi.h"
 #include "MasterRGBTheme.h"
+#include "MasterRGBVersion.h"
+#include "MasterRGBUpdate.h"
 #include "TabLabel.h"
 #include "OpenRGBFont.h"
 
-#define MASTERRGB_VERSION "0.3.0"
 #define MASTERRGB_DEFAULT_REPO "m1000v2/MasterRGB"
 
 namespace
@@ -120,6 +125,111 @@ namespace
         return button;
     }
 
+    QLabel* MakeInfoLabel(const QString& text, const QString& objectName, QWidget* parent)
+    {
+        QLabel* label = new QLabel(text, parent);
+        label->setObjectName(objectName);
+        label->setWordWrap(true);
+        label->setTextFormat(Qt::RichText);
+        label->setOpenExternalLinks(true);
+        label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+
+        return label;
+    }
+
+    QString VersionNotice(bool ok, const QString& latest, const QString& url, const QString& error, bool manual)
+    {
+        if(!ok)
+        {
+            return manual ? QString("Não foi possível verificar agora: %1").arg(error) : QString();
+        }
+
+        if(MasterRGBUpdate::Compare(latest, MASTERRGB_VERSION) > 0)
+        {
+            const QString page = url.isEmpty() ? SupportReleasesUrl() : url;
+
+            return QString("<b>Versão %1 disponivel.</b> <a href=\"%2\">Baixar no GitHub</a>").arg(latest, page);
+        }
+
+        if(manual)
+        {
+            return QString("Você já está na versão mais recente (%1).").arg(MASTERRGB_VERSION);
+        }
+
+        return QString();
+    }
+
+    void ApplyUpdateNotice(QMainWindow* window, const QString& text)
+    {
+        QLabel* homeStatus    = window->findChild<QLabel*>("MasterRGBUpdateStatus");
+        QLabel* supportStatus = window->findChild<QLabel*>("MasterRGBSupportUpdateStatus");
+
+        for(QLabel* label : { homeStatus, supportStatus })
+        {
+            if(label == nullptr)
+            {
+                continue;
+            }
+
+            if(text.isEmpty())
+            {
+                label->clear();
+                label->setVisible(false);
+            }
+            else
+            {
+                label->setText(text);
+                label->setVisible(true);
+            }
+        }
+    }
+
+    void RunUpdateCheck(QMainWindow* window, bool manual)
+    {
+        if(window == nullptr)
+        {
+            return;
+        }
+
+        if(manual)
+        {
+            ApplyUpdateNotice(window, "Verificando atualizações...");
+        }
+
+        MasterRGBUpdate::Check(window, MASTERRGB_VERSION, [window, manual](bool ok, const QString& latest, const QString& url, const QString& error)
+        {
+            const QString notice = VersionNotice(ok, latest, url, error, manual);
+
+            ApplyUpdateNotice(window, notice);
+
+            if(!manual)
+            {
+                return;
+            }
+
+            QMessageBox box(window);
+            box.setWindowTitle("Atualizações do MasterRGB");
+            box.setIcon(ok ? QMessageBox::Information : QMessageBox::Warning);
+            box.setText(ok ? QString("Versão publicada: %1\nVersão instalada: %2").arg(latest, MASTERRGB_VERSION)
+                           : QString("Não foi possível consultar o GitHub.\n\n%1").arg(error));
+
+            if(ok && MasterRGBUpdate::Compare(latest, MASTERRGB_VERSION) > 0)
+            {
+                box.setInformativeText("Deseja abrir a pagina da nova versão?");
+                box.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
+
+                if(box.exec() == QMessageBox::Open)
+                {
+                    OpenWebUrl(url.isEmpty() ? SupportReleasesUrl() : url);
+                }
+            }
+            else
+            {
+                box.exec();
+            }
+        });
+    }
+
     void BrandTabLabels(QMainWindow* window)
     {
         const QList<TabLabel*> labels = window->findChildren<TabLabel*>();
@@ -143,12 +253,68 @@ namespace
         }
     }
 
-    void PopulateHome(QWidget* home, QTabWidget* mainTabs, QTabWidget* deviceTabs, QGridLayout* grid, QLabel* countLabel)
+    QString DeviceCategory(const QString& deviceName)
+    {
+        const QString lower = deviceName.toLower();
+
+        if(lower.contains("dram") || lower.contains("ram") || lower.contains("spectrix") ||
+           lower.contains("memória") || lower.contains("memória"))
+        {
+            return "MEMÓRIA";
+        }
+        if(lower.contains("radeon") || lower.contains("geforce") || lower.contains("rtx") || lower.contains("red devil"))
+        {
+            return "PLACA DE VÍDEO";
+        }
+        if(lower.contains("msi") || lower.contains("motherboard") || lower.contains("placa-mae") || lower.contains("placa-mãe"))
+        {
+            return "PLACA-MÃE";
+        }
+
+        return "PERIFÉRICO";
+    }
+
+    QString DeviceTabName(QTabWidget* deviceTabs, int index)
+    {
+        QString deviceName = deviceTabs->tabText(index).trimmed();
+
+        if(deviceName.isEmpty())
+        {
+            QWidget* button = deviceTabs->tabBar()->tabButton(index, QTabBar::LeftSide);
+
+            if(button)
+            {
+                const QList<QLabel*> pieces = button->findChildren<QLabel*>();
+
+                for(QLabel* piece : pieces)
+                {
+                    const QString part = piece->text().trimmed();
+
+                    if(!part.isEmpty() && !part.startsWith("<img", Qt::CaseInsensitive))
+                    {
+                        deviceName += " " + part;
+                    }
+                }
+            }
+        }
+
+        deviceName = deviceName.trimmed();
+
+        if(deviceName.isEmpty())
+        {
+            deviceName = QString("Dispositivo %1").arg(index + 1);
+        }
+
+        return deviceName;
+    }
+
+    void PopulateHome(QMainWindow* window, QWidget* home, QTabWidget* mainTabs, QTabWidget* deviceTabs, QGridLayout* grid, QLabel* countLabel)
     {
         const int deviceCount = deviceTabs ? deviceTabs->count() : 0;
 
         if(deviceCount <= 0)
         {
+            countLabel->setText("Nenhum dispositivo detectado ainda. Use Buscar dispositivos na barra inferior.");
             return;
         }
 
@@ -169,66 +335,23 @@ namespace
 
         for(int i = 0; i < deviceCount; i++)
         {
-            QString deviceName = deviceTabs->tabText(i).trimmed();
-
-            if(deviceName.isEmpty())
-            {
-                QWidget* button = deviceTabs->tabBar()->tabButton(i, QTabBar::LeftSide);
-
-                if(button)
-                {
-                    const QList<QLabel*> pieces = button->findChildren<QLabel*>();
-
-                    for(QLabel* piece : pieces)
-                    {
-                        const QString part = piece->text().trimmed();
-
-                        if(!part.isEmpty() && !part.startsWith("<img", Qt::CaseInsensitive))
-                        {
-                            deviceName += " " + part;
-                        }
-                    }
-                }
-            }
-
-            deviceName = deviceName.trimmed();
-
-            if(deviceName.isEmpty())
-            {
-                deviceName = QString("Dispositivo %1").arg(i + 1);
-            }
-
-            const QString lower = deviceName.toLower();
-            QString category = "PERIFÉRICO";
-
-            if(lower.contains("dram") || lower.contains("ram") || lower.contains("spectrix"))
-            {
-                category = "MEMÓRIA";
-            }
-            else if(lower.contains("radeon") || lower.contains("geforce") || lower.contains("rtx") || lower.contains("red devil"))
-            {
-                category = "PLACA DE VÍDEO";
-            }
-            else if(lower.contains("msi") || lower.contains("motherboard") || lower.contains("placa-mãe"))
-            {
-                category = "PLACA-MÃE";
-            }
+            const QString deviceName = DeviceTabName(deviceTabs, i);
 
             QFrame* card = new QFrame(home);
             card->setObjectName("MasterRGBDeviceCard");
 
             QVBoxLayout* cardLayout = new QVBoxLayout(card);
             cardLayout->setContentsMargins(14, 12, 14, 12);
-            cardLayout->setSpacing(8);
+            cardLayout->setSpacing(6);
 
-            QLabel* categoryLabel = new QLabel(category, card);
+            QLabel* categoryLabel = new QLabel(DeviceCategory(deviceName), card);
             categoryLabel->setObjectName("MasterRGBDeviceCategory");
 
             QLabel* nameLabel = new QLabel(deviceName, card);
             nameLabel->setObjectName("MasterRGBDeviceName");
             nameLabel->setWordWrap(true);
 
-            QPushButton* openButton = new QPushButton("Abrir controles", card);
+            QPushButton* openButton = new QPushButton("Ajustar", card);
             openButton->setObjectName("MasterRGBOpenDeviceButton");
             openButton->setCursor(Qt::PointingHandCursor);
 
@@ -254,6 +377,78 @@ namespace
                 }
             });
         }
+
+        (void)window;
+    }
+
+    void RefreshProfileChoices(QMainWindow* window, QWidget* home)
+    {
+        QComboBox* source = window->findChild<QComboBox*>("ProfileBox");
+        QComboBox* target = home->findChild<QComboBox*>("MasterRGBHomeProfile");
+        QLabel* status    = home->findChild<QLabel*>("MasterRGBHomeProfileStatus");
+
+        if(source == nullptr || target == nullptr)
+        {
+            return;
+        }
+
+        const QString previous = target->currentText();
+
+        target->blockSignals(true);
+        target->clear();
+
+        for(int i = 0; i < source->count(); i++)
+        {
+            const QString name = source->itemText(i).trimmed();
+
+            if(!name.isEmpty())
+            {
+                target->addItem(name);
+            }
+        }
+
+        target->blockSignals(false);
+
+        if(target->count() <= 0)
+        {
+            target->setEnabled(false);
+            target->addItem("Nenhum perfil salvo");
+
+            QPushButton* apply = home->findChild<QPushButton*>("MasterRGBHomeApply");
+
+            if(apply)
+            {
+                apply->setEnabled(false);
+            }
+
+            if(status)
+            {
+                status->setText("Crie um perfil em <b>Salvar perfil</b>, na barra inferior. Depois ele aparece aqui e pode ser aplicado com um clique.");
+            }
+
+            return;
+        }
+
+        target->setEnabled(true);
+
+        QPushButton* apply = home->findChild<QPushButton*>("MasterRGBHomeApply");
+
+        if(apply)
+        {
+            apply->setEnabled(true);
+        }
+
+        const int index = target->findText(previous);
+
+        if(index >= 0)
+        {
+            target->setCurrentIndex(index);
+        }
+
+        if(status && status->text().isEmpty())
+        {
+            status->setText("Aplicar um perfil grava as cores nos dispositivos. Depois disso, fechar o MasterRGB não apaga o efeito.");
+        }
     }
 
     QWidget* CreateHomePage(QMainWindow* window, QTabWidget* mainTabs, QTabWidget* deviceTabs)
@@ -262,19 +457,100 @@ namespace
         home->setObjectName("MasterRGBHomePage");
 
         QVBoxLayout* layout = new QVBoxLayout(home);
-        layout->setContentsMargins(28, 24, 28, 24);
-        layout->setSpacing(12);
+        layout->setContentsMargins(28, 22, 28, 22);
+        layout->setSpacing(14);
 
         QLabel* title = new QLabel("Início", home);
         title->setObjectName("MasterRGBHomeTitle");
 
         QLabel* description = new QLabel(
-            "O MasterRGB reúne seus dispositivos RGB em um só lugar. Este painel mostra o que foi "
-            "detectado no computador e leva você direto aos controles. As abas superiores abrem "
-            "Dispositivos, Informações, Configurações e Apoiar.", home);
+            "Seu painel de iluminação. Aplique um perfil salvo, veja o que foi detectado no "
+            "computador e abra os controles de cada dispositivo.", home);
         description->setObjectName("MasterRGBHomeDescription");
         description->setWordWrap(true);
 
+        layout->addWidget(title);
+        layout->addWidget(description);
+
+        /*-------------------------------------------------*\
+        | Profile panel: the dashboard acts on the engine,  |
+        | not just as a shortcut for the side tabs.         |
+        \*-------------------------------------------------*/
+        QFrame* profilePanel = new QFrame(home);
+        profilePanel->setObjectName("MasterRGBPanel");
+
+        QVBoxLayout* profileLayout = new QVBoxLayout(profilePanel);
+        profileLayout->setContentsMargins(18, 16, 18, 16);
+        profileLayout->setSpacing(8);
+
+        QLabel* profileTitle = new QLabel("Perfil de iluminação", profilePanel);
+        profileTitle->setObjectName("MasterRGBPanelTitle");
+
+        QLabel* profileHint = new QLabel(
+            "Escolha um perfil salvo e aplique sem sair desta tela.", profilePanel);
+        profileHint->setObjectName("MasterRGBPanelHint");
+        profileHint->setWordWrap(true);
+
+        QHBoxLayout* profileRow = new QHBoxLayout();
+        profileRow->setSpacing(10);
+
+        QComboBox* profileCombo = new QComboBox(profilePanel);
+        profileCombo->setObjectName("MasterRGBHomeProfile");
+        profileCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        profileCombo->setMinimumHeight(34);
+
+        QPushButton* applyButton = new QPushButton("Aplicar perfil", profilePanel);
+        applyButton->setObjectName("MasterRGBHomeApply");
+        applyButton->setCursor(Qt::PointingHandCursor);
+        applyButton->setMinimumHeight(34);
+
+        profileRow->addWidget(profileCombo, 1);
+        profileRow->addWidget(applyButton);
+
+        QLabel* profileStatus = new QLabel(profilePanel);
+        profileStatus->setObjectName("MasterRGBHomeProfileStatus");
+        profileStatus->setWordWrap(true);
+
+        profileLayout->addWidget(profileTitle);
+        profileLayout->addWidget(profileHint);
+        profileLayout->addLayout(profileRow);
+        profileLayout->addWidget(profileStatus);
+
+        layout->addWidget(profilePanel);
+
+        QObject::connect(applyButton, &QPushButton::clicked, home, [window, profileCombo, profileStatus]()
+        {
+            QComboBox* source = window->findChild<QComboBox*>("ProfileBox");
+            QPushButton* load = window->findChild<QPushButton*>("ButtonLoadProfile");
+            const QString name = profileCombo->currentText().trimmed();
+
+            if(source == nullptr || load == nullptr || name.isEmpty() || profileCombo->count() <= 0)
+            {
+                return;
+            }
+
+            const int index = source->findText(name);
+
+            if(index < 0)
+            {
+                profileStatus->setText("Esse perfil não está mais na lista. Salve-o novamente.");
+                return;
+            }
+
+            source->setCurrentIndex(index);
+            QMetaObject::invokeMethod(load, "click", Qt::QueuedConnection);
+
+            profileStatus->setText(QString("Perfil <b>%1</b> enviado ao motor RGB.").arg(name.toHtmlEscaped()));
+        });
+
+        QObject::connect(profileCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), home, [profileStatus](int)
+        {
+            profileStatus->clear();
+        });
+
+        /*-------------------------------------------------*\
+        | Detected devices.                                 |
+        \*-------------------------------------------------*/
         QLabel* countLabel = new QLabel("Detectando dispositivos...", home);
         countLabel->setObjectName("MasterRGBHomeCount");
 
@@ -287,54 +563,17 @@ namespace
         gridHost->setLayout(grid);
         grid->setContentsMargins(0, 0, 0, 0);
 
-        QHBoxLayout* actions = new QHBoxLayout();
-        actions->setSpacing(10);
-
-        QPushButton* devicesButton = MakeLinkButton("Abrir dispositivos", "MasterRGBHomeDevices", home);
-        QPushButton* settingsButton = MakeLinkButton("Configurações", "MasterRGBHomeSettings", home);
-        QPushButton* updatesButton = MakeLinkButton("Atualizações no GitHub", "MasterRGBHomeUpdates", home);
-
-        actions->addWidget(devicesButton);
-        actions->addWidget(settingsButton);
-        actions->addWidget(updatesButton);
-        actions->addStretch(1);
-
-        layout->addWidget(title);
-        layout->addWidget(description);
         layout->addWidget(countLabel);
         layout->addWidget(gridHost);
-        layout->addLayout(actions);
+
+        QLabel* updateStatus = MakeInfoLabel(QString(), "MasterRGBUpdateStatus", home);
+        updateStatus->setVisible(false);
+        layout->addWidget(updateStatus);
+
         layout->addStretch(1);
 
-        QWidget* devicesPage = deviceTabs ? deviceTabs->parentWidget() : nullptr;
-
-        QObject::connect(devicesButton, &QPushButton::clicked, home, [=]()
-        {
-            const int index = mainTabs->indexOf(devicesPage);
-
-            if(index >= 0)
-            {
-                mainTabs->setCurrentIndex(index);
-            }
-        });
-
-        QObject::connect(settingsButton, &QPushButton::clicked, home, [=]()
-        {
-            QWidget* settingsPage = mainTabs->findChild<QWidget*>("TabSettings");
-            const int index = mainTabs->indexOf(settingsPage);
-
-            if(index >= 0)
-            {
-                mainTabs->setCurrentIndex(index);
-            }
-        });
-
-        QObject::connect(updatesButton, &QPushButton::clicked, home, []()
-        {
-            OpenWebUrl(SupportReleasesUrl());
-        });
-
-        PopulateHome(home, mainTabs, deviceTabs, grid, countLabel);
+        PopulateHome(window, home, mainTabs, deviceTabs, grid, countLabel);
+        RefreshProfileChoices(window, home);
 
         if(deviceTabs == nullptr || deviceTabs->count() <= 0)
         {
@@ -345,7 +584,7 @@ namespace
             {
                 if(deviceTabs && deviceTabs->count() > 0)
                 {
-                    PopulateHome(home, mainTabs, deviceTabs, grid, countLabel);
+                    PopulateHome(window, home, mainTabs, deviceTabs, grid, countLabel);
                     timer->stop();
                 }
             });
@@ -353,7 +592,34 @@ namespace
             timer->start();
         }
 
-        (void)window;
+        /*-------------------------------------------------*\
+        | Profiles load after the dialog is built, so the   |
+        | list is refreshed whenever the page is shown.     |
+        \*-------------------------------------------------*/
+        QObject::connect(mainTabs, &QTabWidget::currentChanged, home, [window, home, mainTabs](int index)
+        {
+            if(mainTabs->widget(index) == home)
+            {
+                RefreshProfileChoices(window, home);
+            }
+        });
+
+        QTimer* profileTimer = new QTimer(home);
+        profileTimer->setInterval(2000);
+
+        QObject::connect(profileTimer, &QTimer::timeout, home, [=]()
+        {
+            QComboBox* source = window->findChild<QComboBox*>("ProfileBox");
+
+            if(source && source->count() > 0)
+            {
+                profileTimer->stop();
+            }
+
+            RefreshProfileChoices(window, home);
+        });
+
+        profileTimer->start();
 
         return home;
     }
@@ -364,16 +630,16 @@ namespace
         page->setObjectName("MasterRGBSupportPage");
 
         QVBoxLayout* layout = new QVBoxLayout(page);
-        layout->setContentsMargins(28, 24, 28, 24);
-        layout->setSpacing(12);
+        layout->setContentsMargins(28, 22, 28, 22);
+        layout->setSpacing(10);
 
         QLabel* title = new QLabel("Apoie o MasterRGB", page);
         title->setObjectName("MasterRGBSupportTitle");
 
         QLabel* description = new QLabel(
-            "O MasterRGB é gratuito e de código aberto. Se ele ajuda no seu setup, você pode apoiar "
-            "o projeto ou acompanhar as atualizações pelos links abaixo. Nada é enviado "
-            "automaticamente pelo aplicativo.", page);
+            "O MasterRGB e gratuito e de código aberto. Se ele ajuda no seu setup, você pode apoiar "
+            "o projeto com uma doacao voluntária ou acompanhar as novidades no GitHub. Nada e "
+            "cobrado e nada e enviado automaticamente pelo aplicativo.", page);
         description->setObjectName("MasterRGBSupportDescription");
         description->setWordWrap(true);
 
@@ -385,46 +651,85 @@ namespace
 
         if(!paypal.isEmpty() && QUrl(paypal).isValid())
         {
+            QHBoxLayout* donateRow = new QHBoxLayout();
+            donateRow->setSpacing(16);
+
+            QLabel* qrLabel = new QLabel(page);
+            qrLabel->setObjectName("MasterRGBPayPalQr");
+            qrLabel->setFixedSize(148, 148);
+            qrLabel->setAlignment(Qt::AlignCenter);
+
+            const QString qrPath = QCoreApplication::applicationDirPath() + "/assets/paypal-qr.png";
+            const QPixmap qr(qrPath);
+
+            if(!qr.isNull())
+            {
+                qrLabel->setPixmap(qr.scaled(144, 144, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+            else
+            {
+                qrLabel->setText("QR indisponivel");
+            }
+
+            QVBoxLayout* donateColumn = new QVBoxLayout();
+            donateColumn->setSpacing(8);
+
+            QLabel* donateText = new QLabel(
+                "Aponte a camera do celular para o código ou use o botao, e escolha qualquer valor.", page);
+            donateText->setObjectName("MasterRGBSupportText");
+            donateText->setWordWrap(true);
+
             QPushButton* donate = MakeLinkButton("Apoiar via PayPal", "MasterRGBDonateButton", page);
+            donate->setMaximumWidth(240);
 
             QObject::connect(donate, &QPushButton::clicked, page, [paypal]()
             {
                 OpenWebUrl(paypal);
             });
 
-            layout->addWidget(donate);
+            donateColumn->addWidget(donateText);
+            donateColumn->addWidget(donate);
+            donateColumn->addStretch(1);
+
+            donateRow->addWidget(qrLabel);
+            donateRow->addLayout(donateColumn, 1);
+
+            layout->addLayout(donateRow);
         }
 
-        const QString github = SupportGithubUrl();
         QPushButton* githubButton = MakeLinkButton("Abrir o projeto no GitHub", "MasterRGBGithubButton", page);
+        githubButton->setMaximumWidth(280);
 
-        QObject::connect(githubButton, &QPushButton::clicked, page, [github]()
+        QObject::connect(githubButton, &QPushButton::clicked, page, []()
         {
-            OpenWebUrl(github);
+            OpenWebUrl(SupportGithubUrl());
         });
 
         layout->addWidget(githubButton);
 
-        QLabel* githubLink = new QLabel(QString("<a href=\"%1\">%1</a>").arg(github), page);
-        githubLink->setObjectName("MasterRGBSupportLink");
-        githubLink->setTextFormat(Qt::RichText);
-        githubLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        githubLink->setOpenExternalLinks(true);
-        githubLink->setWordWrap(true);
+        QLabel* githubLink = MakeInfoLabel(
+            QString("<a href=\"%1\">%1</a>").arg(SupportGithubUrl().toHtmlEscaped()),
+            "MasterRGBSupportLink", page);
         layout->addWidget(githubLink);
 
         QPushButton* updates = MakeLinkButton("Verificar atualizações", "MasterRGBUpdatesButton", page);
+        updates->setMaximumWidth(280);
 
-        QObject::connect(updates, &QPushButton::clicked, page, []()
+        QObject::connect(updates, &QPushButton::clicked, page, [page]()
         {
-            OpenWebUrl(SupportReleasesUrl());
+            QMainWindow* window = qobject_cast<QMainWindow*>(page->window());
+            RunUpdateCheck(window, true);
         });
 
         layout->addWidget(updates);
 
+        QLabel* updateStatus = MakeInfoLabel(QString(), "MasterRGBSupportUpdateStatus", page);
+        updateStatus->setVisible(false);
+        layout->addWidget(updateStatus);
+
         QLabel* note = new QLabel(
-            "Atualizações são publicadas na página de Releases. O aplicativo não baixa nem "
-            "instala nada sozinho.", page);
+            "Atualizações são publicadas na pagina de Releases. O aplicativo avisa quando existe "
+            "versão nova, mas so baixa e instala com a sua confirmacao.", page);
         note->setObjectName("MasterRGBSupportNote");
         note->setWordWrap(true);
         layout->addWidget(note);
@@ -486,11 +791,18 @@ namespace
                 return;
             }
 
-            const int aboutIndex = infoTabs->indexOf(aboutPage);
-
-            if(aboutIndex >= 0)
+            /*---------------------------------------------*\
+            | Keep the last device information visible; the |
+            | "Sobre" sub-tab stays one click away.         |
+            \*---------------------------------------------*/
+            if(infoTabs->currentIndex() < 0 || infoTabs->widget(infoTabs->currentIndex()) == nullptr)
             {
-                infoTabs->setCurrentIndex(aboutIndex);
+                const int aboutIndex = infoTabs->indexOf(aboutPage);
+
+                if(aboutIndex >= 0)
+                {
+                    infoTabs->setCurrentIndex(aboutIndex);
+                }
             }
         });
     }
@@ -646,4 +958,13 @@ void MasterRGBUi::Attach(QMainWindow* window)
 
     QTimer::singleShot(0, window, attachPages);
     QTimer::singleShot(900, window, attachPages);
+
+    /*-----------------------------------------------------*\
+    | Silent update check once the window is ready. Missing  |
+    | network or no release yet stays invisible.            |
+    \*-----------------------------------------------------*/
+    QTimer::singleShot(5000, window, [window]()
+    {
+        RunUpdateCheck(window, false);
+    });
 }
