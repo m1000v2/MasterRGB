@@ -1,3 +1,12 @@
+# MasterRGB 0.4.1
+
+## O que mudou nesta versão
+
+- **Ícone novo**: o "M" com a onda colorida substitui o ícone herdado da base. Vale para
+  o executável, atalho da área de trabalho, barra de tarefas, Alt+Tab, instalador e
+  desinstalador, com versão 0.4.1.0 nos detalhes do arquivo.
+- Nenhuma mudança funcional em relação à 0.4.0.
+
 # MasterRGB 0.4.0
 
 ## O que mudou nesta versão

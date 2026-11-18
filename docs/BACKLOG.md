@@ -5,11 +5,10 @@ concreta quando a versão for aberta.
 
 ## 0.4.1 — ajustes rápidos
 
-- [ ] **Ícone da área de trabalho**: o `.exe` instalado já tem o ícone correto (comparado
-  pixel a pixel com `assets/MasterRGB-icon.ico`). Os atalhos antigos
-  `MasterRGB.exe - Atalho.lnk` e `MasterRGB2.exe - Atalho.lnk` apontam para builds
-  anteriores e por isso mostram o logo do OpenRGB. Decidir se serão repontados para
-  `C:\Program Files\MasterRGB\MasterRGB.exe` ou removidos pelo usuário.
+- [x] **Ícone da área de trabalho**: o `.exe` agora carrega o "M" em `assets/MasterRGB-icon.ico`
+  e `assets/MasterRGB-icon.png` (0.4.1). Os atalhos antigos `MasterRGB.exe - Atalho.lnk` e
+  `MasterRGB2.exe - Atalho.lnk` ainda apontam para builds anteriores; decidir se serão
+  repontados para `C:\Program Files\MasterRGB\MasterRGB.exe` ou removidos pelo usuário.
 - [ ] **Remover a aba Informações**: os dados que interessam (versão do app, versão do
   Qt, versão do Windows, link do projeto) passam para a aba **Apoiar**. Avaliar o que
   fazer com a lista lateral de dispositivos e com as subabas de cada controlador.

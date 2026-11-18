@@ -1,5 +1,5 @@
 #define AppName "MasterRGB"
-#define AppVersion "0.4.0"
+#define AppVersion "0.4.1"
 #define AppPublisher "MasterRGB Project"
 #define AppExeName "MasterRGB.exe"
 
@@ -17,7 +17,7 @@ OutputBaseFilename=MasterRGB-Setup-{#AppVersion}
 SetupIconFile=..\assets\MasterRGB-icon.ico
 UninstallDisplayIcon={app}\{#AppExeName}
 UninstallDisplayName={#AppName} {#AppVersion}
-VersionInfoVersion=0.4.0.0
+VersionInfoVersion=0.4.1.0
 VersionInfoProductName={#AppName}
 VersionInfoProductVersion={#AppVersion}
 VersionInfoCompany={#AppPublisher}

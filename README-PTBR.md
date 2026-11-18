@@ -1,4 +1,4 @@
-﻿# MasterRGB 0.3.0 — Build Kit
+﻿# MasterRGB 0.4.1 - Build Kit
 
 MasterRGB é uma adaptação do OpenRGB (GPL-2.0) para Windows, com identidade própria,
 páginas em português e instalador nativo. Este pacote contém o código de integração e
@@ -48,7 +48,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 ```
 
 O script restaura os arquivos originais de interface, aplica a integração MasterRGB,
-compila e gera `dist\MasterRGB-0.4.0-Portable.zip`. Para gerar o instalador, compile
+compila e gera `dist\MasterRGB-0.4.1-Portable.zip`. Para gerar o instalador, compile
 `installer\MasterRGB.iss` com o Inno Setup 6.
 
 O caminho de build fica em `%USERPROFILE%\Documents\MasterRGB-Build`. Os perfis são
