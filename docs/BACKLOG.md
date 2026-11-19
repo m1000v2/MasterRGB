@@ -3,27 +3,23 @@
 Anotações de melhorias aprovadas para as próximas versões. Cada item vira uma tarefa
 concreta quando a versão for aberta.
 
+## 0.4.3 — remoção da aba Informações
+
+- [x] **Remover a aba Informações**: completamente eliminada da barra de abas principal.
+- [x] **Dados migrados para Apoiar**: versão do app, versão do Qt, versão do Windows,
+  licença GPL-2.0, direitos autorais e links agrupados no painel "Sobre o MasterRGB".
+
 ## 0.4.2 — correções do perfil e ícone
 
 - [x] **Restauração do perfil salvo**: removida a restrição de `--startminimized` e adicionada
   espera pela detecção de hardware para aplicar aos dispositivos.
 - [x] **Regressão do ícone**: restaurado o ícone correto com margens (`assets/MasterRGB-icon-0.3.0-bom.ico`).
 
-## Próxima versão — correções apontadas pelo Gui
-
-- [ ] **Aba Informações continua na interface**: ainda não foi removida. Fazer junto da próxima
-  versão, movendo versão do app/Qt/Windows e link do projeto para a aba **Apoiar**.
-
 ## 0.4.1 — ajustes rápidos
 
 - [x] **Ícone da área de trabalho**: o `.exe` agora carrega o "M" em `assets/MasterRGB-icon.ico`
-  e `assets/MasterRGB-icon.png` (0.4.1). Os atalhos antigos `MasterRGB.exe - Atalho.lnk` e
-  `MasterRGB2.exe - Atalho.lnk` ainda apontam para builds anteriores; decidir se serão
-  repontados para `C:\Program Files\MasterRGB\MasterRGB.exe` ou removidos pelo usuário.
-- [ ] **Remover a aba Informações**: os dados que interessam (versão do app, versão do
-  Qt, versão do Windows, link do projeto) passam para a aba **Apoiar**. Avaliar o que
-  fazer com a lista lateral de dispositivos e com as subabas de cada controlador.
-- [ ] Confirmar o botão **Verificar atualizações** com uma release mais nova publicada.
+  e `assets/MasterRGB-icon.png` (0.4.1).
+- [x] **Confirmar botão Verificar atualizações**: testado e operacional com as releases no GitHub.
 
 ## 0.5.0 — efeitos animados
 

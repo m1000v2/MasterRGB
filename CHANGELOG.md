@@ -1,3 +1,11 @@
+# MasterRGB 0.4.3
+
+## O que mudou nesta versão
+
+- **Aba "Informações" eliminada**: a aba redundante e visualmente inconsistente foi completamente removida da barra superior.
+- **Informações do sistema migradas para "Apoiar"**: versão do app, versão da base OpenRGB, versão do Qt, sistema operacional, licença GPL-2.0, direitos autorais e repositório GitHub agora ficam integrados em um painel limpo e padronizado na aba "Apoiar".
+- **Botões integrados**: botões de "Verificar atualizações" e "Abrir no GitHub" posicionados diretamente no painel de informações, com suporte a rolagem responsiva.
+
 # MasterRGB 0.4.2
 
 ## O que mudou nesta versão

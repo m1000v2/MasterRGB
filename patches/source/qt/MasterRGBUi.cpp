@@ -36,6 +36,7 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 #include <QProgressBar>
+#include <QSysInfo>
 
 #include "MasterRGBUi.h"
 #include "MasterRGBTheme.h"
@@ -709,17 +710,32 @@ namespace
         QWidget* page = new QWidget(mainTabs);
         page->setObjectName("MasterRGBSupportPage");
 
-        QVBoxLayout* layout = new QVBoxLayout(page);
-        layout->setContentsMargins(28, 22, 28, 22);
-        layout->setSpacing(10);
+        QVBoxLayout* pageLayout = new QVBoxLayout(page);
+        pageLayout->setContentsMargins(0, 0, 0, 0);
 
-        QLabel* title = new QLabel("Apoie o MasterRGB", page);
+        QScrollArea* scroll = new QScrollArea(page);
+        scroll->setObjectName("MasterRGBSupportScroll");
+        scroll->setWidgetResizable(true);
+        scroll->setFrameShape(QFrame::NoFrame);
+        scroll->setStyleSheet("QScrollArea#MasterRGBSupportScroll { background: transparent; border: none; } QWidget#MasterRGBSupportContainer { background: transparent; }");
+
+        QWidget* container = new QWidget(scroll);
+        container->setObjectName("MasterRGBSupportContainer");
+
+        QVBoxLayout* layout = new QVBoxLayout(container);
+        layout->setContentsMargins(28, 22, 28, 22);
+        layout->setSpacing(16);
+
+        /*-------------------------------------------------*\
+        | 1. Apoie o MasterRGB                              |
+        \*-------------------------------------------------*/
+        QLabel* title = new QLabel("Apoie o MasterRGB", container);
         title->setObjectName("MasterRGBSupportTitle");
 
         QLabel* description = new QLabel(
             "O MasterRGB e gratuito e de código aberto. Se ele ajuda no seu setup, você pode apoiar "
             "o projeto com uma doacao voluntária ou acompanhar as novidades no GitHub. Nada e "
-            "cobrado e nada e enviado automaticamente pelo aplicativo.", page);
+            "cobrado e nada e enviado automaticamente pelo aplicativo.", container);
         description->setObjectName("MasterRGBSupportDescription");
         description->setWordWrap(true);
 
@@ -734,7 +750,7 @@ namespace
             QHBoxLayout* donateRow = new QHBoxLayout();
             donateRow->setSpacing(16);
 
-            QLabel* qrLabel = new QLabel(page);
+            QLabel* qrLabel = new QLabel(container);
             qrLabel->setObjectName("MasterRGBPayPalQr");
             qrLabel->setFixedSize(148, 148);
             qrLabel->setAlignment(Qt::AlignCenter);
@@ -755,14 +771,14 @@ namespace
             donateColumn->setSpacing(8);
 
             QLabel* donateText = new QLabel(
-                "Aponte a camera do celular para o código ou use o botao, e escolha qualquer valor.", page);
+                "Aponte a camera do celular para o código ou use o botao, e escolha qualquer valor.", container);
             donateText->setObjectName("MasterRGBSupportText");
             donateText->setWordWrap(true);
 
-            QPushButton* donate = MakeLinkButton("Apoiar via PayPal", "MasterRGBDonateButton", page);
+            QPushButton* donate = MakeLinkButton("Apoiar via PayPal", "MasterRGBDonateButton", container);
             donate->setMaximumWidth(240);
 
-            QObject::connect(donate, &QPushButton::clicked, page, [paypal]()
+            QObject::connect(donate, &QPushButton::clicked, container, [paypal]()
             {
                 OpenWebUrl(paypal);
             });
@@ -777,44 +793,97 @@ namespace
             layout->addLayout(donateRow);
         }
 
-        QPushButton* githubButton = MakeLinkButton("Abrir o projeto no GitHub", "MasterRGBGithubButton", page);
-        githubButton->setMaximumWidth(280);
+        /*-------------------------------------------------*\
+        | 2. Sobre o MasterRGB                              |
+        \*-------------------------------------------------*/
+        QFrame* infoPanel = new QFrame(container);
+        infoPanel->setObjectName("MasterRGBPanel");
 
-        QObject::connect(githubButton, &QPushButton::clicked, page, []()
+        QVBoxLayout* infoLayout = new QVBoxLayout(infoPanel);
+        infoLayout->setContentsMargins(18, 16, 18, 16);
+        infoLayout->setSpacing(12);
+
+        QLabel* infoTitle = new QLabel("Sobre o MasterRGB", infoPanel);
+        infoTitle->setObjectName("MasterRGBPanelTitle");
+
+        QLabel* infoSubtitle = new QLabel("Controle de iluminação RGB para Windows", infoPanel);
+        infoSubtitle->setObjectName("MasterRGBPanelHint");
+
+        infoLayout->addWidget(infoTitle);
+        infoLayout->addWidget(infoSubtitle);
+
+        QGridLayout* detailsGrid = new QGridLayout();
+        detailsGrid->setContentsMargins(0, 4, 0, 4);
+        detailsGrid->setHorizontalSpacing(20);
+        detailsGrid->setVerticalSpacing(8);
+
+        auto addRow = [&](int row, const QString& labelText, const QString& valueHtml)
         {
-            OpenWebUrl(SupportGithubUrl());
-        });
+            QLabel* lbl = new QLabel(labelText, infoPanel);
+            lbl->setObjectName("MasterRGBInfoKey");
 
-        layout->addWidget(githubButton);
+            QLabel* val = new QLabel(valueHtml, infoPanel);
+            val->setObjectName("MasterRGBInfoVal");
+            val->setTextFormat(Qt::RichText);
+            val->setOpenExternalLinks(true);
+            val->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
-        QLabel* githubLink = MakeInfoLabel(
-            QString("<a href=\"%1\">%1</a>").arg(SupportGithubUrl().toHtmlEscaped()),
-            "MasterRGBSupportLink", page);
-        layout->addWidget(githubLink);
+            detailsGrid->addWidget(lbl, row, 0, Qt::AlignTop | Qt::AlignLeft);
+            detailsGrid->addWidget(val, row, 1, Qt::AlignTop | Qt::AlignLeft);
+        };
 
-        QPushButton* updates = MakeLinkButton("Verificar atualizações", "MasterRGBUpdatesButton", page);
-        updates->setMaximumWidth(280);
+        int r = 0;
+        addRow(r++, "Versão:", QString("<b>MasterRGB %1</b> (base %2)").arg(MASTERRGB_VERSION, MASTERRGB_BASE));
+        addRow(r++, "Versão do Qt:", QT_VERSION_STR);
+        addRow(r++, "Versão do SO:", QSysInfo::prettyProductName());
+        addRow(r++, "Licença:", "Licença Pública Geral GNU, versão 2 (GPL-2.0)");
+        addRow(r++, "Direitos autorais:", "Adam Honse (base OpenRGB) e projeto MasterRGB");
+        addRow(r++, "GitHub:", QString("<a href=\"%1\">%1</a>").arg(SupportGithubUrl()));
 
-        QObject::connect(updates, &QPushButton::clicked, page, [page]()
+        detailsGrid->setColumnStretch(1, 1);
+        infoLayout->addLayout(detailsGrid);
+
+        QHBoxLayout* buttonRow = new QHBoxLayout();
+        buttonRow->setSpacing(12);
+
+        QPushButton* updates = MakeLinkButton("Verificar atualizações", "MasterRGBUpdatesButton", infoPanel);
+        updates->setMaximumWidth(220);
+        QObject::connect(updates, &QPushButton::clicked, infoPanel, [page]()
         {
             QMainWindow* window = qobject_cast<QMainWindow*>(page->window());
             RunUpdateCheck(window, true);
         });
 
-        layout->addWidget(updates);
+        QPushButton* githubButton = MakeLinkButton("Abrir no GitHub", "MasterRGBGithubButton", infoPanel);
+        githubButton->setMaximumWidth(220);
+        QObject::connect(githubButton, &QPushButton::clicked, infoPanel, []()
+        {
+            OpenWebUrl(SupportGithubUrl());
+        });
 
-        QLabel* updateStatus = MakeInfoLabel(QString(), "MasterRGBSupportUpdateStatus", page);
+        buttonRow->addWidget(updates);
+        buttonRow->addWidget(githubButton);
+        buttonRow->addStretch(1);
+
+        infoLayout->addSpacing(4);
+        infoLayout->addLayout(buttonRow);
+
+        QLabel* updateStatus = MakeInfoLabel(QString(), "MasterRGBSupportUpdateStatus", infoPanel);
         updateStatus->setVisible(false);
-        layout->addWidget(updateStatus);
+        infoLayout->addWidget(updateStatus);
 
         QLabel* note = new QLabel(
             "Atualizações são publicadas na pagina de Releases. O aplicativo avisa quando existe "
-            "versão nova, mas so baixa e instala com a sua confirmacao.", page);
+            "versão nova, mas so baixa e instala com a sua confirmacao.", infoPanel);
         note->setObjectName("MasterRGBSupportNote");
         note->setWordWrap(true);
-        layout->addWidget(note);
+        infoLayout->addWidget(note);
 
+        layout->addWidget(infoPanel);
         layout->addStretch(1);
+
+        scroll->setWidget(container);
+        pageLayout->addWidget(scroll);
 
         return page;
     }
@@ -854,44 +923,36 @@ namespace
         mainTabs->tabBar()->setTabButton(index, QTabBar::LeftSide, label);
     }
 
-    void WireInformationPage(QMainWindow* window, QTabWidget* mainTabs, QTabWidget* infoTabs)
+    void RemoveInformationTab(QMainWindow* window, QTabWidget* mainTabs)
     {
-        if(infoTabs == nullptr || window->property("mrgbInformationWired").toBool())
+        QWidget* tabInfo = window->findChild<QWidget*>("TabInformation");
+
+        if(tabInfo != nullptr)
         {
-            return;
+            const int infoIdx = mainTabs->indexOf(tabInfo);
+
+            if(infoIdx >= 0)
+            {
+                mainTabs->removeTab(infoIdx);
+            }
+            tabInfo->setVisible(false);
+            tabInfo->hide();
         }
 
-        QWidget* aboutPage = window->findChild<QWidget*>("OpenRGBSoftwareInfoPage");
-        QWidget* infoContainer = infoTabs->parentWidget();
-
-        if(aboutPage == nullptr || infoContainer == nullptr)
+        for(int i = mainTabs->count() - 1; i >= 0; --i)
         {
-            return;
+            QWidget* page = mainTabs->widget(i);
+            const QString tabText = mainTabs->tabText(i);
+
+            if(page != nullptr && (page->objectName() == "TabInformation" ||
+               tabText.contains("Information", Qt::CaseInsensitive) ||
+               tabText.contains("Informações", Qt::CaseInsensitive)))
+            {
+                mainTabs->removeTab(i);
+                page->setVisible(false);
+                page->hide();
+            }
         }
-
-        window->setProperty("mrgbInformationWired", true);
-
-        QObject::connect(mainTabs, &QTabWidget::currentChanged, window, [mainTabs, infoTabs, aboutPage, infoContainer](int index)
-        {
-            if(mainTabs->widget(index) != infoContainer)
-            {
-                return;
-            }
-
-            /*---------------------------------------------*\
-            | Keep the last device information visible; the |
-            | "Sobre" sub-tab stays one click away.         |
-            \*---------------------------------------------*/
-            if(infoTabs->currentIndex() < 0 || infoTabs->widget(infoTabs->currentIndex()) == nullptr)
-            {
-                const int aboutIndex = infoTabs->indexOf(aboutPage);
-
-                if(aboutIndex >= 0)
-                {
-                    infoTabs->setCurrentIndex(aboutIndex);
-                }
-            }
-        });
     }
 
     void SyncThemeCombo(QMainWindow* window)
@@ -1060,11 +1121,10 @@ void MasterRGBUi::Attach(QMainWindow* window)
         }
 
         QTabWidget* deviceTabs = window->findChild<QTabWidget*>("DevicesTabBar");
-        QTabWidget* infoTabs = window->findChild<QTabWidget*>("InformationTabBar");
 
+        RemoveInformationTab(window, mainTabs);
         AddHomePage(window, mainTabs, deviceTabs);
         AddSupportPage(mainTabs);
-        WireInformationPage(window, mainTabs, infoTabs);
         SyncThemeCombo(window);
         RestoreStartupProfile(window);
 

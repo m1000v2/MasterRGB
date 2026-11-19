@@ -68,3 +68,11 @@ QLabel#MasterRGBUpdateStatus { color: #4E39A8; font-size: 10pt; padding: 4px 0; 
 QLabel#MasterRGBSupportText { color: #4A576B; font-size: 10pt; }
 QPushButton#MasterRGBHomeApply { background-color: #6846D8; border-color: #927AFF; color: #FFFFFF; font-weight: 700; }
 QPushButton#MasterRGBHomeApply:hover { background-color: #795BE8; }
+
+/* 0.4.3 info panel in support tab */
+QLabel#MasterRGBInfoKey { color: #5C697F; font-weight: 600; font-size: 10pt; min-width: 130px; }
+QLabel#MasterRGBInfoVal { color: #202938; font-size: 10pt; }
+QLabel#MasterRGBInfoVal a { color: #6846D8; text-decoration: none; }
+QLabel#MasterRGBInfoVal a:hover { text-decoration: underline; }
+QWidget#MasterRGBSupportContainer { background-color: transparent; }
+QScrollArea#MasterRGBSupportScroll { background: transparent; border: none; }
