@@ -1,3 +1,15 @@
+# MasterRGB 0.4.2
+
+## O que mudou nesta versão
+
+- **Restauração do perfil salvo na inicialização corrigida**: o perfil agora é restaurado tanto
+  na abertura normal quanto ao iniciar minimizado com o Windows. A rotina aguarda a detecção
+  completa dos dispositivos de hardware terminar antes de enviar as cores aos controladores.
+- **Sincronização na aba Início**: o seletor de perfil e o status no painel Início são
+  atualizados automaticamente com o perfil restaurado.
+- **Ícone com margem correta**: restaurado o ícone oficial sem cortes nas bordas para atalho,
+  executável e instalador.
+
 # MasterRGB 0.4.1
 
 ## O que mudou nesta versão

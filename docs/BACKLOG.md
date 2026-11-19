@@ -3,17 +3,16 @@
 Anotações de melhorias aprovadas para as próximas versões. Cada item vira uma tarefa
 concreta quando a versão for aberta.
 
-## Próxima versão — correções apontadas pelo Gui (teste da 0.4.1)
+## 0.4.2 — correções do perfil e ícone
 
-- [ ] **Regressão do ícone**: o ícone da 0.4.1 ficou cortado. O "M" encosta na borda
-  esquerda e a onda colorida sai pela direita, sem a margem do quadrado arredondado.
-  O ícone da 0.3.0 estava correto e foi preservado em `assets/MasterRGB-icon-0.3.0-bom.ico`
-  (36.729 B, o mesmo usado nas builds 0.2.x/0.3.0). Ação: voltar a apontar `RC_ICONS`
-  e o instalador para esse arquivo, ou redesenhar a partir dele em vez de recortar
-  uma captura de tela. Conferir em 16, 32, 48 e 256 px antes de publicar.
-- [ ] **Aba Informações continua na interface**: ainda não foi removida — a 0.4.1 só
-  trocou o ícone, a mudança das abas está pendente. Fazer junto da próxima versão,
-  movendo versão do app/Qt/Windows e link do projeto para a aba **Apoiar**.
+- [x] **Restauração do perfil salvo**: removida a restrição de `--startminimized` e adicionada
+  espera pela detecção de hardware para aplicar aos dispositivos.
+- [x] **Regressão do ícone**: restaurado o ícone correto com margens (`assets/MasterRGB-icon-0.3.0-bom.ico`).
+
+## Próxima versão — correções apontadas pelo Gui
+
+- [ ] **Aba Informações continua na interface**: ainda não foi removida. Fazer junto da próxima
+  versão, movendo versão do app/Qt/Windows e link do projeto para a aba **Apoiar**.
 
 ## 0.4.1 — ajustes rápidos
 

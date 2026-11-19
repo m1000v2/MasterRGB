@@ -35,6 +35,7 @@
 #include <QPixmap>
 #include <QScrollArea>
 #include <QSizePolicy>
+#include <QProgressBar>
 
 #include "MasterRGBUi.h"
 #include "MasterRGBTheme.h"
@@ -42,11 +43,72 @@
 #include "MasterRGBUpdate.h"
 #include "TabLabel.h"
 #include "OpenRGBFont.h"
+#include "ResourceManager.h"
 
 #define MASTERRGB_DEFAULT_REPO "m1000v2/MasterRGB"
 
 namespace
 {
+    QString ReadLastProfileName()
+    {
+        const QStringList paths = {
+            qEnvironmentVariable("APPDATA") + "/OpenRGB/MasterRGB_LastProfile.txt",
+            qEnvironmentVariable("APPDATA") + "/MasterRGB/MasterRGB_LastProfile.txt",
+            QCoreApplication::applicationDirPath() + "/MasterRGB_LastProfile.txt"
+        };
+
+        for(const QString& path : paths)
+        {
+            QFile file(path);
+            if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
+            {
+                QString profile = QString::fromUtf8(file.readAll()).trimmed();
+                if(profile.endsWith(".orp", Qt::CaseInsensitive))
+                {
+                    profile.chop(4);
+                }
+                if(!profile.isEmpty())
+                {
+                    return profile;
+                }
+            }
+        }
+
+        return QString();
+    }
+
+    void SaveLastProfileName(const QString& name)
+    {
+        QString cleanName = name.trimmed();
+        if(cleanName.endsWith(".orp", Qt::CaseInsensitive))
+        {
+            cleanName.chop(4);
+        }
+        if(cleanName.isEmpty())
+        {
+            return;
+        }
+
+        const QStringList dirs = {
+            qEnvironmentVariable("APPDATA") + "/OpenRGB",
+            qEnvironmentVariable("APPDATA") + "/MasterRGB"
+        };
+
+        for(const QString& dirPath : dirs)
+        {
+            QDir dir(dirPath);
+            if(!dir.exists())
+            {
+                dir.mkpath(".");
+            }
+            QFile file(dirPath + "/MasterRGB_LastProfile.txt");
+            if(file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+            {
+                file.write(cleanName.toUtf8());
+                file.close();
+            }
+        }
+    }
     QString SupportFilePath()
     {
         const QString userPath = MasterRGBTheme::ConfigDir() + "/support.json";
@@ -437,7 +499,13 @@ namespace
             apply->setEnabled(true);
         }
 
-        const int index = target->findText(previous);
+        QString selected = previous;
+        if(selected.isEmpty())
+        {
+            selected = ReadLastProfileName();
+        }
+
+        const int index = target->findText(selected);
 
         if(index >= 0)
         {
@@ -539,6 +607,7 @@ namespace
 
             source->setCurrentIndex(index);
             QMetaObject::invokeMethod(load, "click", Qt::QueuedConnection);
+            SaveLastProfileName(name);
 
             profileStatus->setText(QString("Perfil <b>%1</b> enviado ao motor RGB.").arg(name.toHtmlEscaped()));
         });
@@ -844,8 +913,7 @@ namespace
 
     void RestoreStartupProfile(QMainWindow* window)
     {
-        if(!QCoreApplication::arguments().contains("--startminimized") ||
-           window->property("mrgbStartupProfileStarted").toBool())
+        if(window->property("mrgbStartupProfileStarted").toBool())
         {
             return;
         }
@@ -853,7 +921,7 @@ namespace
         window->setProperty("mrgbStartupProfileStarted", true);
 
         QTimer* timer = new QTimer(window);
-        timer->setInterval(1000);
+        timer->setInterval(500);
         timer->setProperty("tries", 0);
 
         QObject::connect(timer, &QTimer::timeout, window, [window, timer]()
@@ -861,27 +929,18 @@ namespace
             const int tries = timer->property("tries").toInt() + 1;
             timer->setProperty("tries", tries);
 
-            QFile file(qEnvironmentVariable("APPDATA") + "/OpenRGB/MasterRGB_LastProfile.txt");
-            QString profile;
+            const QString profile = ReadLastProfileName();
 
-            if(file.open(QIODevice::ReadOnly | QIODevice::Text))
-            {
-                profile = QString::fromUtf8(file.readAll()).trimmed();
-            }
-
-            if(profile.isEmpty() || tries > 45)
+            if(profile.isEmpty() || tries > 120)
             {
                 timer->stop();
                 return;
             }
 
-            if(profile.endsWith(".orp", Qt::CaseInsensitive))
-            {
-                profile.chop(4);
-            }
-
             QComboBox* box = window->findChild<QComboBox*>("ProfileBox");
             QPushButton* loadButton = window->findChild<QPushButton*>("ButtonLoadProfile");
+            QProgressBar* progressBar = window->findChild<QProgressBar*>("DetectionProgressBar");
+            QTabWidget* deviceTabs = window->findChild<QTabWidget*>("DevicesTabBar");
 
             if(box == nullptr || loadButton == nullptr)
             {
@@ -895,9 +954,47 @@ namespace
                 return;
             }
 
+            /*-------------------------------------------------*\
+            | Wait until hardware device detection completes:   |
+            | 1. Progress bar is hidden (SetDetectionViewState) |
+            | 2. ButtonLoadProfile is visible/unhidden          |
+            | 3. ResourceManager reports 100% detection         |
+            | 4. Device tabs are populated                      |
+            \*-------------------------------------------------*/
+            const bool progressHidden = (progressBar == nullptr || progressBar->isHidden());
+            const bool buttonReady = !loadButton->isHidden();
+            const bool percentDone = (ResourceManager::get()->GetDetectionPercent() >= 100);
+            const bool hasDevices = (deviceTabs != nullptr && deviceTabs->count() > 0);
+
+            const bool detectionFinished = percentDone && progressHidden && buttonReady && (hasDevices || tries >= 40);
+
+            if(!detectionFinished)
+            {
+                return;
+            }
+
             timer->stop();
             box->setCurrentIndex(index);
             QMetaObject::invokeMethod(loadButton, "click", Qt::QueuedConnection);
+
+            QComboBox* homeProfile = window->findChild<QComboBox*>("MasterRGBHomeProfile");
+            QLabel* homeStatus    = window->findChild<QLabel*>("MasterRGBHomeProfileStatus");
+
+            if(homeProfile)
+            {
+                const int homeIdx = homeProfile->findText(profile);
+                if(homeIdx >= 0)
+                {
+                    homeProfile->blockSignals(true);
+                    homeProfile->setCurrentIndex(homeIdx);
+                    homeProfile->blockSignals(false);
+                }
+            }
+
+            if(homeStatus)
+            {
+                homeStatus->setText(QString("Perfil <b>%1</b> restaurado na inicialização.").arg(profile.toHtmlEscaped()));
+            }
         });
 
         timer->start();
