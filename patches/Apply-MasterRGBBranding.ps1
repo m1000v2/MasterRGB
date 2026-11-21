@@ -42,6 +42,27 @@ foreach ($name in $sourceFiles) {
     Copy-Item -LiteralPath $from -Destination $to -Force
 }
 
+$pluginFiles = @('OpenRGBPluginInfo.h', 'OpenRGBPluginInterface.h', 'PluginManager.h', 'PluginManager.cpp',
+                 'MasterRGBPluginBridge.h', 'MasterRGBPluginBridge.cpp', 'OpenRGBPluginAPI.h', 'OpenRGBPluginAPI.cpp')
+foreach ($name in $pluginFiles) {
+    $from = Join-Path $PSScriptRoot "source\$name"
+    $to = Join-Path $SourceDir $name
+    if (Test-Path -LiteralPath $from) {
+        Copy-Item -LiteralPath $from -Destination $to -Force
+    }
+}
+
+$controllerFiles = @('RGBControllerAccess.h', 'RGBControllerAccess.cpp', 'RGBControllerAdapter.h',
+                     'RGBControllerAdapter.cpp', 'RGBControllerInterface.h', 'RGBController_Virtual.h',
+                     'RGBController_Virtual.cpp')
+foreach ($name in $controllerFiles) {
+    $from = Join-Path $PSScriptRoot "source\$name"
+    $to = Join-Path $SourceDir "RGBController\$name"
+    if (Test-Path -LiteralPath $from) {
+        Copy-Item -LiteralPath $from -Destination $to -Force
+    }
+}
+
 #-----------------------------------------------------------------------------------------------
 # 1b. Product icons and executable version info.
 #     qmake builds its Windows .rc from RC_ICONS + VERSION, so replacing the
@@ -67,6 +88,35 @@ if ($projectText -notmatch '(?m)^QT\s*\+=\s*network\s*$') {
 if ($projectText -notmatch '(?m)^VERSION\s*=') {
     $projectText = [regex]::Replace($projectText, '(?m)^TARGET\s*=\s*MasterRGB\s*$',
         "TARGET = MasterRGB`r`nVERSION = $Version", 1)
+}
+
+$headersPattern = '(?m)^[ \t]*OpenRGBPluginInterface\.h[ \t]*\\[\r\n]+[ \t]*PluginManager\.h[ \t]*\\'
+if ($projectText -match $headersPattern) {
+    $pluginHeadersBlock = @"
+    OpenRGBPluginInfo.h                                                                         \
+    OpenRGBPluginInterface.h                                                                    \
+    PluginManager.h                                                                             \
+    MasterRGBPluginBridge.h                                                                     \
+    OpenRGBPluginAPI.h                                                                          \
+    RGBController/RGBControllerAccess.h                                                         \
+    RGBController/RGBControllerAdapter.h                                                        \
+    RGBController/RGBControllerInterface.h                                                      \
+    RGBController/RGBController_Virtual.h                                                       \
+"@
+    $projectText = [regex]::Replace($projectText, $headersPattern, $pluginHeadersBlock)
+}
+
+$sourcesPattern = '(?m)^[ \t]*PluginManager\.cpp[ \t]*\\$'
+if ($projectText -match $sourcesPattern -and $projectText -notmatch 'MasterRGBPluginBridge\.cpp') {
+    $pluginSourcesBlock = @"
+    PluginManager.cpp                                                                           \
+    MasterRGBPluginBridge.cpp                                                                   \
+    OpenRGBPluginAPI.cpp                                                                        \
+    RGBController/RGBControllerAccess.cpp                                                       \
+    RGBController/RGBControllerAdapter.cpp                                                      \
+    RGBController/RGBController_Virtual.cpp                                                     \
+"@
+    $projectText = [regex]::Replace($projectText, $sourcesPattern, $pluginSourcesBlock)
 }
 [IO.File]::WriteAllText($projectFile, $projectText, [Text.UTF8Encoding]::new($false))
 
@@ -97,6 +147,8 @@ $text = $text.Insert($insertAt, $attach)
 
 # Preserve upstream attribution but use the product name in the tray tooltip.
 $text = $text.Replace('trayIcon->setToolTip("OpenRGB");', 'trayIcon->setToolTip("MasterRGB");')
+$text = $text.Replace('plugin->plugin->GetWidget()', 'plugin->widget')
+$text = $text.Replace('plugin->plugin->GetTrayMenu()', 'plugin->traymenu')
 [IO.File]::WriteAllText($dialog, $text, [Text.UTF8Encoding]::new($false))
 
 #-----------------------------------------------------------------------------------------------
@@ -247,6 +299,24 @@ if (Test-Path -LiteralPath $cli) {
     $cliText = $cliText.Replace('Run `OpenRGB --help` for syntax', 'Run `MasterRGB --help` for syntax')
     $cliText = $cliText.Replace('Usage: OpenRGB (', 'Usage: MasterRGB (')
     [IO.File]::WriteAllText($cli, $cliText, [Text.UTF8Encoding]::new($false))
+}
+
+#-----------------------------------------------------------------------------------------------
+# 6. Default destructors for mode and zone to avoid LNK2005 with plugin API.
+#-----------------------------------------------------------------------------------------------
+$controllerH = Join-Path $SourceDir 'RGBController\RGBController.h'
+if (Test-Path -LiteralPath $controllerH) {
+    $textH = [IO.File]::ReadAllText($controllerH)
+    $textH = $textH.Replace("~mode();", "~mode() = default;")
+    $textH = $textH.Replace("~zone();", "~zone() = default;")
+    [IO.File]::WriteAllText($controllerH, $textH, [Text.UTF8Encoding]::new($false))
+}
+$controllerCpp = Join-Path $SourceDir 'RGBController\RGBController.cpp'
+if (Test-Path -LiteralPath $controllerCpp) {
+    $textCpp = [IO.File]::ReadAllText($controllerCpp)
+    $textCpp = [regex]::Replace($textCpp, '(?s)mode::~mode\(\)\s*\{.*?\}', '')
+    $textCpp = [regex]::Replace($textCpp, '(?s)zone::~zone\(\)\s*\{.*?\}', '')
+    [IO.File]::WriteAllText($controllerCpp, $textCpp, [Text.UTF8Encoding]::new($false))
 }
 
 Write-Host "Interface MasterRGB $Version aplicada (Inicio, Apoiar, icone, atualizacoes e Sobre)." -ForegroundColor Green

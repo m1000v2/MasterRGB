@@ -5,13 +5,13 @@ concreta quando a versão for aberta.
 
 ## 0.4.4 — suporte a plugins oficiais (Plugin API v5)
 
-- [ ] **Backport da Plugin API v5**: atualizar `OpenRGBPluginInterface.h` para usar o IID
+- [x] **Backport da Plugin API v5**: atualizar `OpenRGBPluginInterface.h` para usar o IID
   oficial `"org.openrgb.OpenRGBPluginInterface"` e `OPENRGB_PLUGIN_API_VERSION 5`.
-- [ ] **Camada OpenRGBPluginAPI**: implementar `OpenRGBPluginAPIInterface` (`OpenRGBPluginAPI.h` e
+- [x] **Camada OpenRGBPluginAPI**: implementar `OpenRGBPluginAPIInterface` (`OpenRGBPluginAPI.h` e
   `OpenRGBPluginAPI.cpp`) no núcleo do MasterRGB para intermediar a comunicação com as DLLs.
-- [ ] **Controladores virtuais**: adicionar `RGBController_Virtual` para suportar plugins como
+- [x] **Controladores virtuais**: adicionar `RGBController_Virtual` para suportar plugins como
   Visual Map, Hardware Sync e E1.31 Receiver.
-- [ ] **Validação com as DLLs**: testar carregamento dos plugins enviados na aba Configurações > Plugins.
+- [x] **Validação com as DLLs**: testar carregamento dos plugins enviados na aba Configurações > Plugins.
 
 ## 0.4.3 — remoção da aba Informações
 

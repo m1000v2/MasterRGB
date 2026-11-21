@@ -1,3 +1,12 @@
+# MasterRGB 0.4.4
+
+## O que mudou nesta versão
+
+- **Suporte completo a plugins oficiais (Plugin API v5)**: adicionado suporte ao identificador oficial `org.openrgb.OpenRGBPluginInterface` e à especificação API v5 do OpenRGB 1.0, permitindo carregar, habilitar e configurar diretamente os plugins oficiais.
+- **Camada de ponte e adaptador (OpenRGBPluginAPI)**: implementação da interface de comunicação para plugins com suporte a controladores virtuais (`RGBController_Virtual`), mapas de LED, sincronização de hardware e perfis.
+- **Base WinRing0 100% preservada**: os drivers de acesso direto ao barramento SMBus/I2C permanecem na versão estável WinRing0, garantindo o funcionamento perfeito e sem conflitos da placa de vídeo PowerColor RX 6700 XT e dos módulos de memória ENE DRAM.
+- **Compatibilidade testada**: suporte aos plugins oficiais OpenRGB Visual Map, Hardware Sync, Scheduler, HTTP Hook, E1.31 Receiver e Skin Plugin.
+
 # MasterRGB 0.4.3
 
 ## O que mudou nesta versão
