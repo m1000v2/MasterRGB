@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [string]$SourceDir
@@ -106,7 +106,7 @@ if ($projectText -match $headersPattern) {
     $projectText = [regex]::Replace($projectText, $headersPattern, $pluginHeadersBlock)
 }
 
-$sourcesPattern = '(?m)^[ \t]*PluginManager\.cpp[ \t]*\\$'
+$sourcesPattern = '(?m)^[ \t]*PluginManager\.cpp[ \t]*\\\r?$'
 if ($projectText -match $sourcesPattern -and $projectText -notmatch 'MasterRGBPluginBridge\.cpp') {
     $pluginSourcesBlock = @"
     PluginManager.cpp                                                                           \
