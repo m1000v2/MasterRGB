@@ -1,3 +1,13 @@
+# MasterRGB 0.4.5
+
+## O que mudou nesta versão
+
+- **Ativação e desativação em tempo real de plugins corrigida**: resolvido o problema em que clicar na caixa de seleção de um plugin não o inicializava nem criava suas abas de interface. O carregador agora inicializa o plugin, seus componentes visuais e o menu da bandeja imediatamente.
+- **Criação dinâmica de abas de plugins**: ao ativar um plugin (como Visual Map, Hardware Sync, Scheduler, etc.), sua respectiva aba é criada instantaneamente na barra de navegação correspondente. Ao desativar, a aba é removida de forma limpa.
+- **Persistência bidirecional de estado**: a ativação e desativação dos plugins agora é sincronizada e persistida tanto no formato padrão do OpenRGB (`Plugins`) quanto nas configurações do MasterRGB (`PluginManager`), mantendo os plugins ativados após fechar e reabrir o aplicativo.
+- **Deduplicação automática de plugins**: plugins presentes tanto na pasta do executável quanto na pasta de usuário (`%APPDATA%\OpenRGB\plugins`) não aparecem mais duplicados na lista.
+- **Proteção contra exceções**: adicionado tratamento de exceções robusto na carga e descarga de plugins de terceiros para evitar encerramento inesperado do programa.
+
 # MasterRGB 0.4.4
 
 ## O que mudou nesta versão

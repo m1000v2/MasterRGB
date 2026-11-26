@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
     [string]$SourceDir
@@ -149,7 +149,32 @@ $text = $text.Insert($insertAt, $attach)
 $text = $text.Replace('trayIcon->setToolTip("OpenRGB");', 'trayIcon->setToolTip("MasterRGB");')
 $text = $text.Replace('plugin->plugin->GetWidget()', 'plugin->widget')
 $text = $text.Replace('plugin->plugin->GetTrayMenu()', 'plugin->traymenu')
+$text = $text.Replace("case OPENRGB_PLUGIN_LOCATION_SETTINGS:
+            plugin_parent_widget = ui->InformationTabBar;", "case OPENRGB_PLUGIN_LOCATION_SETTINGS:
+            plugin_parent_widget = ui->SettingsTabBar;")
+$text = $text.Replace("case OPENRGB_PLUGIN_LOCATION_SETTINGS:
+            plugin_parent_widget = ui->InformationTabBar;", "case OPENRGB_PLUGIN_LOCATION_SETTINGS:
+            plugin_parent_widget = ui->SettingsTabBar;")
+$text = [regex]::Replace($text, 'void OpenRGBDialog::AddPlugin\(OpenRGBPluginEntry\* plugin\)\s*\{', "void OpenRGBDialog::AddPlugin(OpenRGBPluginEntry* plugin)
+{
+    if(plugin == nullptr) { return; }")
+$text = [regex]::Replace($text, 'void OpenRGBDialog::RemovePlugin\(OpenRGBPluginEntry\* plugin\)\s*\{', "void OpenRGBDialog::RemovePlugin(OpenRGBPluginEntry* plugin)
+{
+    if(plugin == nullptr) { return; }")
 [IO.File]::WriteAllText($dialog, $text, [Text.UTF8Encoding]::new($false))
+
+$containerFile = Join-Path $SourceDir 'qt\OpenRGBPluginContainer\OpenRGBPluginContainer.cpp'
+if (Test-Path -LiteralPath $containerFile) {
+    $containerText = [IO.File]::ReadAllText($containerFile)
+    $containerText = [regex]::Replace($containerText, 'plugin_widget = plugin;\s*plugin_widget->setParent\(this\);\s*ui->PluginContainerLayout->layout\(\)->addWidget\(plugin_widget\);\s*Hide\(\);', "plugin_widget = plugin;
+    if(plugin_widget != nullptr)
+    {
+        plugin_widget->setParent(this);
+        ui->PluginContainerLayout->layout()->addWidget(plugin_widget);
+        Hide();
+    }")
+    [IO.File]::WriteAllText($containerFile, $containerText, [Text.UTF8Encoding]::new($false))
+}
 
 #-----------------------------------------------------------------------------------------------
 # 2b. Visible strings that still said OpenRGB: window title, startup message,
